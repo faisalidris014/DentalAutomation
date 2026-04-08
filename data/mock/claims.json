@@ -1,0 +1,1420 @@
+[
+  {
+    "id": "clm_001",
+    "patientId": "pat_1",
+    "patientName": "Maria Gonzalez",
+    "clinicId": "clinic_1",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-9928471",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-02-10",
+    "dateSubmitted": "2026-02-11",
+    "referenceNumber": "DD-2026-0041582",
+    "status": "paid",
+    "totalFee": 285.00,
+    "allowedAmount": 248.00,
+    "paidAmount": 198.40,
+    "patientResp": 49.60,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": 52.00,
+        "paidAmount": 41.60,
+        "patientResp": 10.40,
+        "adjustmentAmount": 13.00
+      },
+      {
+        "procedureCode": "D0274",
+        "procedureDescription": "Bitewings - four radiographic images",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 80.00,
+        "allowedAmount": 68.00,
+        "paidAmount": 54.40,
+        "patientResp": 13.60,
+        "adjustmentAmount": 12.00
+      },
+      {
+        "procedureCode": "D1110",
+        "procedureDescription": "Prophylaxis - adult",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 140.00,
+        "allowedAmount": 128.00,
+        "paidAmount": 102.40,
+        "patientResp": 25.60,
+        "adjustmentAmount": 12.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-02-11", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-02-14", "status": "processing", "description": "Claim received and under review" },
+      { "date": "2026-02-22", "status": "approved", "description": "Claim approved - payment processing" },
+      { "date": "2026-03-01", "status": "paid", "description": "Payment issued via EFT - Check #441829" }
+    ]
+  },
+  {
+    "id": "clm_002",
+    "patientId": "pat_2",
+    "patientName": "James Chen",
+    "clinicId": "clinic_1",
+    "payerId": "cigna",
+    "payerName": "Cigna",
+    "subscriberId": "CG-7743201",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-02-18",
+    "dateSubmitted": "2026-02-19",
+    "referenceNumber": "CG-2026-0089231",
+    "status": "paid",
+    "totalFee": 1250.00,
+    "allowedAmount": 1080.00,
+    "paidAmount": 864.00,
+    "patientResp": 216.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2750",
+        "procedureDescription": "Crown - porcelain fused to high noble metal",
+        "toothNumber": "19",
+        "surface": null,
+        "fee": 1250.00,
+        "allowedAmount": 1080.00,
+        "paidAmount": 864.00,
+        "patientResp": 216.00,
+        "adjustmentAmount": 170.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-02-19", "status": "submitted", "description": "Claim submitted electronically to Cigna" },
+      { "date": "2026-02-21", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-05", "status": "approved", "description": "Claim approved" },
+      { "date": "2026-03-12", "status": "paid", "description": "Payment issued via EFT - Check #887422" }
+    ]
+  },
+  {
+    "id": "clm_003",
+    "patientId": "pat_3",
+    "patientName": "Sarah Williams",
+    "clinicId": "clinic_2",
+    "payerId": "metlife",
+    "payerName": "MetLife",
+    "subscriberId": "ML-5531847",
+    "provider": "Dr. James Rodriguez, DMD",
+    "dateOfService": "2026-01-22",
+    "dateSubmitted": "2026-01-23",
+    "referenceNumber": "ML-2026-0034291",
+    "status": "paid",
+    "totalFee": 340.00,
+    "allowedAmount": 305.00,
+    "paidAmount": 244.00,
+    "patientResp": 61.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": 55.00,
+        "paidAmount": 44.00,
+        "patientResp": 11.00,
+        "adjustmentAmount": 10.00
+      },
+      {
+        "procedureCode": "D0210",
+        "procedureDescription": "Intraoral - complete series of radiographic images",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 135.00,
+        "allowedAmount": 122.00,
+        "paidAmount": 97.60,
+        "patientResp": 24.40,
+        "adjustmentAmount": 13.00
+      },
+      {
+        "procedureCode": "D1110",
+        "procedureDescription": "Prophylaxis - adult",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 140.00,
+        "allowedAmount": 128.00,
+        "paidAmount": 102.40,
+        "patientResp": 25.60,
+        "adjustmentAmount": 12.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-01-23", "status": "submitted", "description": "Claim submitted electronically to MetLife" },
+      { "date": "2026-01-27", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-02-05", "status": "approved", "description": "Claim approved" },
+      { "date": "2026-02-14", "status": "paid", "description": "Payment issued via EFT - Check #331084" }
+    ]
+  },
+  {
+    "id": "clm_004",
+    "patientId": "pat_4",
+    "patientName": "Robert Johnson",
+    "clinicId": "clinic_3",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-8821034",
+    "provider": "Dr. Karen Liu, DDS",
+    "dateOfService": "2026-02-25",
+    "dateSubmitted": "2026-02-26",
+    "referenceNumber": "DD-2026-0058821",
+    "status": "paid",
+    "totalFee": 520.00,
+    "allowedAmount": 465.00,
+    "paidAmount": 372.00,
+    "patientResp": 93.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D4341",
+        "procedureDescription": "Periodontal scaling and root planing - four or more teeth per quadrant",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 260.00,
+        "allowedAmount": 232.00,
+        "paidAmount": 185.60,
+        "patientResp": 46.40,
+        "adjustmentAmount": 28.00
+      },
+      {
+        "procedureCode": "D4341",
+        "procedureDescription": "Periodontal scaling and root planing - four or more teeth per quadrant",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 260.00,
+        "allowedAmount": 233.00,
+        "paidAmount": 186.40,
+        "patientResp": 46.60,
+        "adjustmentAmount": 27.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-02-26", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-03-02", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-10", "status": "approved", "description": "Claim approved" },
+      { "date": "2026-03-18", "status": "paid", "description": "Payment issued via EFT - Check #449217" }
+    ]
+  },
+  {
+    "id": "clm_005",
+    "patientId": "pat_5",
+    "patientName": "Linda Patel",
+    "clinicId": "clinic_1",
+    "payerId": "metlife",
+    "payerName": "MetLife",
+    "subscriberId": "ML-6642918",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-03-03",
+    "dateSubmitted": "2026-03-04",
+    "referenceNumber": "ML-2026-0052187",
+    "status": "paid",
+    "totalFee": 190.00,
+    "allowedAmount": 172.00,
+    "paidAmount": 137.60,
+    "patientResp": 34.40,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2391",
+        "procedureDescription": "Resin-based composite - one surface, posterior",
+        "toothNumber": "14",
+        "surface": "O",
+        "fee": 190.00,
+        "allowedAmount": 172.00,
+        "paidAmount": 137.60,
+        "patientResp": 34.40,
+        "adjustmentAmount": 18.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-04", "status": "submitted", "description": "Claim submitted electronically to MetLife" },
+      { "date": "2026-03-07", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-14", "status": "approved", "description": "Claim approved" },
+      { "date": "2026-03-22", "status": "paid", "description": "Payment issued via EFT - Check #339841" }
+    ]
+  },
+  {
+    "id": "clm_006",
+    "patientId": "pat_6",
+    "patientName": "Michael Torres",
+    "clinicId": "clinic_2",
+    "payerId": "cigna",
+    "payerName": "Cigna",
+    "subscriberId": "CG-4419823",
+    "provider": "Dr. James Rodriguez, DMD",
+    "dateOfService": "2026-03-05",
+    "dateSubmitted": "2026-03-06",
+    "referenceNumber": "CG-2026-0112894",
+    "status": "paid",
+    "totalFee": 425.00,
+    "allowedAmount": 380.00,
+    "paidAmount": 304.00,
+    "patientResp": 76.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2392",
+        "procedureDescription": "Resin-based composite - two surfaces, posterior",
+        "toothNumber": "30",
+        "surface": "MO",
+        "fee": 245.00,
+        "allowedAmount": 218.00,
+        "paidAmount": 174.40,
+        "patientResp": 43.60,
+        "adjustmentAmount": 27.00
+      },
+      {
+        "procedureCode": "D2391",
+        "procedureDescription": "Resin-based composite - one surface, posterior",
+        "toothNumber": "29",
+        "surface": "O",
+        "fee": 180.00,
+        "allowedAmount": 162.00,
+        "paidAmount": 129.60,
+        "patientResp": 32.40,
+        "adjustmentAmount": 18.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-06", "status": "submitted", "description": "Claim submitted electronically to Cigna" },
+      { "date": "2026-03-09", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-18", "status": "approved", "description": "Claim approved" },
+      { "date": "2026-03-26", "status": "paid", "description": "Payment issued via EFT - Check #892104" }
+    ]
+  },
+  {
+    "id": "clm_007",
+    "patientId": "pat_7",
+    "patientName": "Jennifer Kim",
+    "clinicId": "clinic_3",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-7735129",
+    "provider": "Dr. Karen Liu, DDS",
+    "dateOfService": "2026-03-10",
+    "dateSubmitted": "2026-03-11",
+    "referenceNumber": "DD-2026-0072934",
+    "status": "paid",
+    "totalFee": 780.00,
+    "allowedAmount": 690.00,
+    "paidAmount": 552.00,
+    "patientResp": 138.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D3330",
+        "procedureDescription": "Endodontic therapy, molar (excluding final restoration)",
+        "toothNumber": "3",
+        "surface": null,
+        "fee": 780.00,
+        "allowedAmount": 690.00,
+        "paidAmount": 552.00,
+        "patientResp": 138.00,
+        "adjustmentAmount": 90.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-11", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-03-13", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-21", "status": "approved", "description": "Claim approved" },
+      { "date": "2026-03-28", "status": "paid", "description": "Payment issued via EFT - Check #453891" }
+    ]
+  },
+  {
+    "id": "clm_008",
+    "patientId": "pat_8",
+    "patientName": "David Martinez",
+    "clinicId": "clinic_1",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-6619287",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-03-12",
+    "dateSubmitted": "2026-03-13",
+    "referenceNumber": "DD-2026-0078412",
+    "status": "paid",
+    "totalFee": 285.00,
+    "allowedAmount": 248.00,
+    "paidAmount": 198.40,
+    "patientResp": 49.60,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": 52.00,
+        "paidAmount": 41.60,
+        "patientResp": 10.40,
+        "adjustmentAmount": 13.00
+      },
+      {
+        "procedureCode": "D0274",
+        "procedureDescription": "Bitewings - four radiographic images",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 80.00,
+        "allowedAmount": 68.00,
+        "paidAmount": 54.40,
+        "patientResp": 13.60,
+        "adjustmentAmount": 12.00
+      },
+      {
+        "procedureCode": "D1110",
+        "procedureDescription": "Prophylaxis - adult",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 140.00,
+        "allowedAmount": 128.00,
+        "paidAmount": 102.40,
+        "patientResp": 25.60,
+        "adjustmentAmount": 12.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-13", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-03-16", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-24", "status": "approved", "description": "Claim approved" },
+      { "date": "2026-04-01", "status": "paid", "description": "Payment issued via EFT - Check #458102" }
+    ]
+  },
+  {
+    "id": "clm_009",
+    "patientId": "pat_9",
+    "patientName": "Amanda Robinson",
+    "clinicId": "clinic_2",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-3348172",
+    "provider": "Dr. James Rodriguez, DMD",
+    "dateOfService": "2026-03-18",
+    "dateSubmitted": "2026-03-19",
+    "referenceNumber": "DD-2026-0085293",
+    "status": "approved",
+    "totalFee": 1450.00,
+    "allowedAmount": 1280.00,
+    "paidAmount": 0,
+    "patientResp": 256.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2740",
+        "procedureDescription": "Crown - porcelain/ceramic",
+        "toothNumber": "8",
+        "surface": null,
+        "fee": 1450.00,
+        "allowedAmount": 1280.00,
+        "paidAmount": 0,
+        "patientResp": 256.00,
+        "adjustmentAmount": 170.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-19", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-03-21", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-04-02", "status": "approved", "description": "Claim approved - awaiting payment processing" }
+    ]
+  },
+  {
+    "id": "clm_010",
+    "patientId": "pat_10",
+    "patientName": "Christopher Lee",
+    "clinicId": "clinic_3",
+    "payerId": "cigna",
+    "payerName": "Cigna",
+    "subscriberId": "CG-8817453",
+    "provider": "Dr. Karen Liu, DDS",
+    "dateOfService": "2026-03-20",
+    "dateSubmitted": "2026-03-21",
+    "referenceNumber": "CG-2026-0134582",
+    "status": "approved",
+    "totalFee": 285.00,
+    "allowedAmount": 250.00,
+    "paidAmount": 0,
+    "patientResp": 50.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": 55.00,
+        "paidAmount": 0,
+        "patientResp": 11.00,
+        "adjustmentAmount": 10.00
+      },
+      {
+        "procedureCode": "D0274",
+        "procedureDescription": "Bitewings - four radiographic images",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 80.00,
+        "allowedAmount": 70.00,
+        "paidAmount": 0,
+        "patientResp": 14.00,
+        "adjustmentAmount": 10.00
+      },
+      {
+        "procedureCode": "D1110",
+        "procedureDescription": "Prophylaxis - adult",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 140.00,
+        "allowedAmount": 125.00,
+        "paidAmount": 0,
+        "patientResp": 25.00,
+        "adjustmentAmount": 15.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-21", "status": "submitted", "description": "Claim submitted electronically to Cigna" },
+      { "date": "2026-03-24", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-04-03", "status": "approved", "description": "Claim approved - awaiting payment processing" }
+    ]
+  },
+  {
+    "id": "clm_011",
+    "patientId": "pat_11",
+    "patientName": "Emily Nguyen",
+    "clinicId": "clinic_1",
+    "payerId": "metlife",
+    "payerName": "MetLife",
+    "subscriberId": "ML-9924561",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-03-22",
+    "dateSubmitted": "2026-03-23",
+    "referenceNumber": "ML-2026-0068421",
+    "status": "approved",
+    "totalFee": 245.00,
+    "allowedAmount": 218.00,
+    "paidAmount": 0,
+    "patientResp": 43.60,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2392",
+        "procedureDescription": "Resin-based composite - two surfaces, posterior",
+        "toothNumber": "18",
+        "surface": "DO",
+        "fee": 245.00,
+        "allowedAmount": 218.00,
+        "paidAmount": 0,
+        "patientResp": 43.60,
+        "adjustmentAmount": 27.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-23", "status": "submitted", "description": "Claim submitted electronically to MetLife" },
+      { "date": "2026-03-25", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-04-04", "status": "approved", "description": "Claim approved - awaiting payment processing" }
+    ]
+  },
+  {
+    "id": "clm_012",
+    "patientId": "pat_12",
+    "patientName": "Daniel Brown",
+    "clinicId": "clinic_2",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-2237849",
+    "provider": "Dr. James Rodriguez, DMD",
+    "dateOfService": "2026-03-24",
+    "dateSubmitted": "2026-03-25",
+    "referenceNumber": "DD-2026-0091472",
+    "status": "approved",
+    "totalFee": 595.00,
+    "allowedAmount": 530.00,
+    "paidAmount": 0,
+    "patientResp": 106.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D7210",
+        "procedureDescription": "Extraction, erupted tooth requiring removal of bone and/or sectioning of tooth",
+        "toothNumber": "17",
+        "surface": null,
+        "fee": 325.00,
+        "allowedAmount": 290.00,
+        "paidAmount": 0,
+        "patientResp": 58.00,
+        "adjustmentAmount": 35.00
+      },
+      {
+        "procedureCode": "D0220",
+        "procedureDescription": "Intraoral - periapical first radiographic image",
+        "toothNumber": "17",
+        "surface": null,
+        "fee": 35.00,
+        "allowedAmount": 30.00,
+        "paidAmount": 0,
+        "patientResp": 6.00,
+        "adjustmentAmount": 5.00
+      },
+      {
+        "procedureCode": "D9215",
+        "procedureDescription": "Local anesthesia in conjunction with operative or surgical procedures",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 55.00,
+        "allowedAmount": 48.00,
+        "paidAmount": 0,
+        "patientResp": 9.60,
+        "adjustmentAmount": 7.00
+      },
+      {
+        "procedureCode": "D2391",
+        "procedureDescription": "Resin-based composite - one surface, posterior",
+        "toothNumber": "18",
+        "surface": "O",
+        "fee": 180.00,
+        "allowedAmount": 162.00,
+        "paidAmount": 0,
+        "patientResp": 32.40,
+        "adjustmentAmount": 18.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-25", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-03-28", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-04-05", "status": "approved", "description": "Claim approved - awaiting payment processing" }
+    ]
+  },
+  {
+    "id": "clm_013",
+    "patientId": "pat_13",
+    "patientName": "Rachel Thompson",
+    "clinicId": "clinic_3",
+    "payerId": "metlife",
+    "payerName": "MetLife",
+    "subscriberId": "ML-8815293",
+    "provider": "Dr. Karen Liu, DDS",
+    "dateOfService": "2026-03-25",
+    "dateSubmitted": "2026-03-26",
+    "referenceNumber": "ML-2026-0074891",
+    "status": "approved",
+    "totalFee": 175.00,
+    "allowedAmount": 155.00,
+    "paidAmount": 0,
+    "patientResp": 31.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": 55.00,
+        "paidAmount": 0,
+        "patientResp": 11.00,
+        "adjustmentAmount": 10.00
+      },
+      {
+        "procedureCode": "D1120",
+        "procedureDescription": "Prophylaxis - child",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 110.00,
+        "allowedAmount": 100.00,
+        "paidAmount": 0,
+        "patientResp": 20.00,
+        "adjustmentAmount": 10.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-26", "status": "submitted", "description": "Claim submitted electronically to MetLife" },
+      { "date": "2026-03-28", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-04-06", "status": "approved", "description": "Claim approved - awaiting payment processing" }
+    ]
+  },
+  {
+    "id": "clm_014",
+    "patientId": "pat_14",
+    "patientName": "Kevin Anderson",
+    "clinicId": "clinic_1",
+    "payerId": "cigna",
+    "payerName": "Cigna",
+    "subscriberId": "CG-5528914",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-03-26",
+    "dateSubmitted": "2026-03-27",
+    "referenceNumber": "CG-2026-0148293",
+    "status": "approved",
+    "totalFee": 380.00,
+    "allowedAmount": 340.00,
+    "paidAmount": 0,
+    "patientResp": 68.00,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2393",
+        "procedureDescription": "Resin-based composite - three surfaces, posterior",
+        "toothNumber": "4",
+        "surface": "MOD",
+        "fee": 310.00,
+        "allowedAmount": 278.00,
+        "paidAmount": 0,
+        "patientResp": 55.60,
+        "adjustmentAmount": 32.00
+      },
+      {
+        "procedureCode": "D0220",
+        "procedureDescription": "Intraoral - periapical first radiographic image",
+        "toothNumber": "4",
+        "surface": null,
+        "fee": 35.00,
+        "allowedAmount": 30.00,
+        "paidAmount": 0,
+        "patientResp": 6.00,
+        "adjustmentAmount": 5.00
+      },
+      {
+        "procedureCode": "D9215",
+        "procedureDescription": "Local anesthesia in conjunction with operative or surgical procedures",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 35.00,
+        "allowedAmount": 32.00,
+        "paidAmount": 0,
+        "patientResp": 6.40,
+        "adjustmentAmount": 3.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-27", "status": "submitted", "description": "Claim submitted electronically to Cigna" },
+      { "date": "2026-03-30", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-04-06", "status": "approved", "description": "Claim approved - awaiting payment processing" }
+    ]
+  },
+  {
+    "id": "clm_015",
+    "patientId": "pat_15",
+    "patientName": "Jessica Davis",
+    "clinicId": "clinic_2",
+    "payerId": "metlife",
+    "payerName": "MetLife",
+    "subscriberId": "ML-7724831",
+    "provider": "Dr. James Rodriguez, DMD",
+    "dateOfService": "2026-03-28",
+    "dateSubmitted": "2026-03-29",
+    "referenceNumber": "ML-2026-0081293",
+    "status": "processing",
+    "totalFee": 1650.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D6010",
+        "procedureDescription": "Surgical placement of implant body: endosteal implant",
+        "toothNumber": "19",
+        "surface": null,
+        "fee": 1650.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-29", "status": "submitted", "description": "Claim submitted electronically to MetLife" },
+      { "date": "2026-04-01", "status": "processing", "description": "Claim under review - additional documentation may be requested" }
+    ]
+  },
+  {
+    "id": "clm_016",
+    "patientId": "pat_16",
+    "patientName": "Brian Wilson",
+    "clinicId": "clinic_3",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-1142983",
+    "provider": "Dr. Karen Liu, DDS",
+    "dateOfService": "2026-03-30",
+    "dateSubmitted": "2026-03-31",
+    "referenceNumber": "DD-2026-0098741",
+    "status": "processing",
+    "totalFee": 285.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D0274",
+        "procedureDescription": "Bitewings - four radiographic images",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 80.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D1110",
+        "procedureDescription": "Prophylaxis - adult",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 140.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-31", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-04-02", "status": "processing", "description": "Claim received and under review" }
+    ]
+  },
+  {
+    "id": "clm_017",
+    "patientId": "pat_17",
+    "patientName": "Stephanie Garcia",
+    "clinicId": "clinic_1",
+    "payerId": "cigna",
+    "payerName": "Cigna",
+    "subscriberId": "CG-6638472",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-04-01",
+    "dateSubmitted": "2026-04-02",
+    "referenceNumber": "CG-2026-0159841",
+    "status": "processing",
+    "totalFee": 950.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D3310",
+        "procedureDescription": "Endodontic therapy, anterior tooth (excluding final restoration)",
+        "toothNumber": "9",
+        "surface": null,
+        "fee": 750.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D2335",
+        "procedureDescription": "Resin-based composite - four or more surfaces or involving incisal angle, anterior",
+        "toothNumber": "9",
+        "surface": "MLDI",
+        "fee": 200.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-04-02", "status": "submitted", "description": "Claim submitted electronically to Cigna" },
+      { "date": "2026-04-04", "status": "processing", "description": "Claim under review" }
+    ]
+  },
+  {
+    "id": "clm_018",
+    "patientId": "pat_18",
+    "patientName": "Andrew White",
+    "clinicId": "clinic_2",
+    "payerId": "metlife",
+    "payerName": "MetLife",
+    "subscriberId": "ML-4438291",
+    "provider": "Dr. James Rodriguez, DMD",
+    "dateOfService": "2026-04-02",
+    "dateSubmitted": "2026-04-03",
+    "referenceNumber": "ML-2026-0088124",
+    "status": "processing",
+    "totalFee": 510.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D4341",
+        "procedureDescription": "Periodontal scaling and root planing - four or more teeth per quadrant",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 260.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D4342",
+        "procedureDescription": "Periodontal scaling and root planing - one to three teeth per quadrant",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 185.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-04-03", "status": "submitted", "description": "Claim submitted electronically to MetLife" },
+      { "date": "2026-04-05", "status": "processing", "description": "Claim received and under review" }
+    ]
+  },
+  {
+    "id": "clm_019",
+    "patientId": "pat_19",
+    "patientName": "Nicole Harris",
+    "clinicId": "clinic_3",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-9918724",
+    "provider": "Dr. Karen Liu, DDS",
+    "dateOfService": "2026-04-03",
+    "dateSubmitted": "2026-04-04",
+    "referenceNumber": "DD-2026-0104582",
+    "status": "submitted",
+    "totalFee": 285.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D0274",
+        "procedureDescription": "Bitewings - four radiographic images",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 80.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D1110",
+        "procedureDescription": "Prophylaxis - adult",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 140.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-04-04", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" }
+    ]
+  },
+  {
+    "id": "clm_020",
+    "patientId": "pat_20",
+    "patientName": "Tyler Jackson",
+    "clinicId": "clinic_1",
+    "payerId": "cigna",
+    "payerName": "Cigna",
+    "subscriberId": "CG-3327418",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-04-04",
+    "dateSubmitted": "2026-04-05",
+    "referenceNumber": "CG-2026-0162847",
+    "status": "submitted",
+    "totalFee": 190.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2391",
+        "procedureDescription": "Resin-based composite - one surface, posterior",
+        "toothNumber": "13",
+        "surface": "O",
+        "fee": 190.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-04-05", "status": "submitted", "description": "Claim submitted electronically to Cigna" }
+    ]
+  },
+  {
+    "id": "clm_021",
+    "patientId": "pat_1",
+    "patientName": "Maria Gonzalez",
+    "clinicId": "clinic_1",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-9928471",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-04-05",
+    "dateSubmitted": "2026-04-06",
+    "referenceNumber": "DD-2026-0108293",
+    "status": "submitted",
+    "totalFee": 350.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2392",
+        "procedureDescription": "Resin-based composite - two surfaces, posterior",
+        "toothNumber": "20",
+        "surface": "MO",
+        "fee": 245.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D0220",
+        "procedureDescription": "Intraoral - periapical first radiographic image",
+        "toothNumber": "20",
+        "surface": null,
+        "fee": 35.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D9215",
+        "procedureDescription": "Local anesthesia in conjunction with operative or surgical procedures",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 70.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-04-06", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" }
+    ]
+  },
+  {
+    "id": "clm_022",
+    "patientId": "pat_2",
+    "patientName": "James Chen",
+    "clinicId": "clinic_1",
+    "payerId": "cigna",
+    "payerName": "Cigna",
+    "subscriberId": "CG-7743201",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-04-06",
+    "dateSubmitted": "2026-04-07",
+    "referenceNumber": "CG-2026-0167291",
+    "status": "submitted",
+    "totalFee": 285.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D0120",
+        "procedureDescription": "Periodic oral evaluation - established patient",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 65.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D0274",
+        "procedureDescription": "Bitewings - four radiographic images",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 80.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      },
+      {
+        "procedureCode": "D1110",
+        "procedureDescription": "Prophylaxis - adult",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 140.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-04-07", "status": "submitted", "description": "Claim submitted electronically to Cigna" }
+    ]
+  },
+  {
+    "id": "clm_023",
+    "patientId": "pat_3",
+    "patientName": "Sarah Williams",
+    "clinicId": "clinic_2",
+    "payerId": "metlife",
+    "payerName": "MetLife",
+    "subscriberId": "ML-5531847",
+    "provider": "Dr. James Rodriguez, DMD",
+    "dateOfService": "2026-03-01",
+    "dateSubmitted": "2026-03-02",
+    "referenceNumber": "ML-2026-0047821",
+    "status": "denied",
+    "totalFee": 245.00,
+    "allowedAmount": 0,
+    "paidAmount": 0,
+    "patientResp": 245.00,
+    "denialReason": "Missing Information - CDT code requires tooth number",
+    "denialCode": "N4",
+    "suggestedAction": "Resubmit claim with tooth number specified for D2392. Update line item to include tooth #30 and surface MO.",
+    "lineItems": [
+      {
+        "procedureCode": "D2392",
+        "procedureDescription": "Resin-based composite - two surfaces, posterior",
+        "toothNumber": null,
+        "surface": "MO",
+        "fee": 245.00,
+        "allowedAmount": 0,
+        "paidAmount": 0,
+        "patientResp": 245.00,
+        "adjustmentAmount": 0
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-02", "status": "submitted", "description": "Claim submitted electronically to MetLife" },
+      { "date": "2026-03-05", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-12", "status": "denied", "description": "Claim denied - Missing tooth number for restorative procedure D2392" }
+    ]
+  },
+  {
+    "id": "clm_024",
+    "patientId": "pat_4",
+    "patientName": "Robert Johnson",
+    "clinicId": "clinic_3",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-8821034",
+    "provider": "Dr. Karen Liu, DDS",
+    "dateOfService": "2026-03-15",
+    "dateSubmitted": "2026-03-16",
+    "referenceNumber": "DD-2026-0082173",
+    "status": "denied",
+    "totalFee": 140.00,
+    "allowedAmount": 0,
+    "paidAmount": 0,
+    "patientResp": 140.00,
+    "denialReason": "Frequency Limitation - Service exceeds plan limit",
+    "denialCode": "N362",
+    "suggestedAction": "Patient had prophylaxis within the last 6 months (last service 2025-12-18). Next eligible date is 2026-06-18. Inform patient of frequency limitation and reschedule if needed.",
+    "lineItems": [
+      {
+        "procedureCode": "D1110",
+        "procedureDescription": "Prophylaxis - adult",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 140.00,
+        "allowedAmount": 0,
+        "paidAmount": 0,
+        "patientResp": 140.00,
+        "adjustmentAmount": 0
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-16", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-03-18", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-25", "status": "denied", "description": "Claim denied - Frequency limitation: prophylaxis limited to once every 6 months" }
+    ]
+  },
+  {
+    "id": "clm_025",
+    "patientId": "pat_5",
+    "patientName": "Linda Patel",
+    "clinicId": "clinic_1",
+    "payerId": "metlife",
+    "payerName": "MetLife",
+    "subscriberId": "ML-6642918",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-03-08",
+    "dateSubmitted": "2026-03-09",
+    "referenceNumber": "ML-2026-0055482",
+    "status": "denied",
+    "totalFee": 1250.00,
+    "allowedAmount": 0,
+    "paidAmount": 0,
+    "patientResp": 1250.00,
+    "denialReason": "Prior Authorization Required",
+    "denialCode": "MA13",
+    "suggestedAction": "Submit prior authorization request for crown D2750 on tooth #14. Include clinical notes, radiographs, and justification for medical necessity. Resubmit claim after authorization is obtained.",
+    "lineItems": [
+      {
+        "procedureCode": "D2750",
+        "procedureDescription": "Crown - porcelain fused to high noble metal",
+        "toothNumber": "14",
+        "surface": null,
+        "fee": 1250.00,
+        "allowedAmount": 0,
+        "paidAmount": 0,
+        "patientResp": 1250.00,
+        "adjustmentAmount": 0
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-09", "status": "submitted", "description": "Claim submitted electronically to MetLife" },
+      { "date": "2026-03-11", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-19", "status": "denied", "description": "Claim denied - Prior authorization required for crown procedure D2750" }
+    ]
+  },
+  {
+    "id": "clm_026",
+    "patientId": "pat_6",
+    "patientName": "Michael Torres",
+    "clinicId": "clinic_2",
+    "payerId": "cigna",
+    "payerName": "Cigna",
+    "subscriberId": "CG-4419823",
+    "provider": "Dr. James Rodriguez, DMD",
+    "dateOfService": "2026-02-28",
+    "dateSubmitted": "2026-03-01",
+    "referenceNumber": "CG-2026-0098712",
+    "status": "partial",
+    "totalFee": 1890.00,
+    "allowedAmount": 1540.00,
+    "paidAmount": 892.00,
+    "patientResp": 648.00,
+    "denialReason": "D2950 downcoded to D2949 per plan guidelines",
+    "denialCode": null,
+    "suggestedAction": "Review partial payment. Core buildup D2950 was downcoded. Consider appealing with clinical justification if full-coverage core buildup was medically necessary.",
+    "lineItems": [
+      {
+        "procedureCode": "D2750",
+        "procedureDescription": "Crown - porcelain fused to high noble metal",
+        "toothNumber": "30",
+        "surface": null,
+        "fee": 1250.00,
+        "allowedAmount": 1080.00,
+        "paidAmount": 648.00,
+        "patientResp": 432.00,
+        "adjustmentAmount": 170.00
+      },
+      {
+        "procedureCode": "D2950",
+        "procedureDescription": "Core buildup, including any pins when required",
+        "toothNumber": "30",
+        "surface": null,
+        "fee": 340.00,
+        "allowedAmount": 210.00,
+        "paidAmount": 126.00,
+        "patientResp": 84.00,
+        "adjustmentAmount": 130.00
+      },
+      {
+        "procedureCode": "D2940",
+        "procedureDescription": "Protective restoration",
+        "toothNumber": "30",
+        "surface": null,
+        "fee": 300.00,
+        "allowedAmount": 250.00,
+        "paidAmount": 118.00,
+        "patientResp": 132.00,
+        "adjustmentAmount": 50.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-01", "status": "submitted", "description": "Claim submitted electronically to Cigna" },
+      { "date": "2026-03-04", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-15", "status": "partial", "description": "Partial payment - D2950 downcoded per plan guidelines" },
+      { "date": "2026-03-22", "status": "partial", "description": "Partial payment issued via EFT - Check #894281" }
+    ]
+  },
+  {
+    "id": "clm_027",
+    "patientId": "pat_7",
+    "patientName": "Jennifer Kim",
+    "clinicId": "clinic_3",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-7735129",
+    "provider": "Dr. Karen Liu, DDS",
+    "dateOfService": "2026-03-02",
+    "dateSubmitted": "2026-03-03",
+    "referenceNumber": "DD-2026-0062481",
+    "status": "partial",
+    "totalFee": 520.00,
+    "allowedAmount": 430.00,
+    "paidAmount": 258.00,
+    "patientResp": 172.00,
+    "denialReason": "D4342 denied - does not meet periodontal criteria; D4341 paid at reduced rate",
+    "denialCode": null,
+    "suggestedAction": "Appeal D4342 denial with periodontal charting and clinical notes demonstrating pocket depths >= 4mm. Consider submitting narrative for medical necessity.",
+    "lineItems": [
+      {
+        "procedureCode": "D4341",
+        "procedureDescription": "Periodontal scaling and root planing - four or more teeth per quadrant",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 260.00,
+        "allowedAmount": 232.00,
+        "paidAmount": 162.40,
+        "patientResp": 69.60,
+        "adjustmentAmount": 28.00
+      },
+      {
+        "procedureCode": "D4342",
+        "procedureDescription": "Periodontal scaling and root planing - one to three teeth per quadrant",
+        "toothNumber": null,
+        "surface": null,
+        "fee": 260.00,
+        "allowedAmount": 198.00,
+        "paidAmount": 95.60,
+        "patientResp": 102.40,
+        "adjustmentAmount": 62.00
+      }
+    ],
+    "timeline": [
+      { "date": "2026-03-03", "status": "submitted", "description": "Claim submitted electronically to Delta Dental" },
+      { "date": "2026-03-06", "status": "processing", "description": "Claim under review" },
+      { "date": "2026-03-18", "status": "partial", "description": "Partial payment - D4342 reduced, does not fully meet periodontal criteria" },
+      { "date": "2026-03-25", "status": "partial", "description": "Partial payment issued via EFT - Check #451839" }
+    ]
+  },
+  {
+    "id": "clm_028",
+    "patientId": "pat_8",
+    "patientName": "David Martinez",
+    "clinicId": "clinic_1",
+    "payerId": "delta_dental",
+    "payerName": "Delta Dental",
+    "subscriberId": "DD-6619287",
+    "provider": "Dr. Sarah Mitchell, DDS",
+    "dateOfService": "2026-04-07",
+    "dateSubmitted": null,
+    "referenceNumber": null,
+    "status": "queued",
+    "totalFee": 245.00,
+    "allowedAmount": null,
+    "paidAmount": 0,
+    "patientResp": null,
+    "denialReason": null,
+    "denialCode": null,
+    "suggestedAction": null,
+    "lineItems": [
+      {
+        "procedureCode": "D2392",
+        "procedureDescription": "Resin-based composite - two surfaces, posterior",
+        "toothNumber": "12",
+        "surface": "DO",
+        "fee": 245.00,
+        "allowedAmount": null,
+        "paidAmount": 0,
+        "patientResp": null,
+        "adjustmentAmount": null
+      }
+    ],
+    "timeline": [
+      { "date": "2026-04-07", "status": "queued", "description": "Claim queued for electronic submission" }
+    ]
+  }
+]

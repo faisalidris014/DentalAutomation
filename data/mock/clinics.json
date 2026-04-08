@@ -1,0 +1,47 @@
+[
+  {
+    "id": "clinic_1",
+    "name": "Bright Smiles Dental",
+    "address": {
+      "street": "4820 Maple Avenue, Suite 200",
+      "city": "Dallas",
+      "state": "TX",
+      "zip": "75219"
+    },
+    "phone": "(214) 555-0147",
+    "npi": "1234567890",
+    "agentId": "agent_1",
+    "status": "active",
+    "createdAt": "2024-06-15T09:00:00Z"
+  },
+  {
+    "id": "clinic_2",
+    "name": "Lakewood Family Dentistry",
+    "address": {
+      "street": "7310 Gaston Avenue",
+      "city": "Dallas",
+      "state": "TX",
+      "zip": "75214"
+    },
+    "phone": "(214) 555-0283",
+    "npi": "2345678901",
+    "agentId": "agent_2",
+    "status": "active",
+    "createdAt": "2024-08-22T14:30:00Z"
+  },
+  {
+    "id": "clinic_3",
+    "name": "North Star Dental Group",
+    "address": {
+      "street": "15201 Midway Road, Suite 110",
+      "city": "Addison",
+      "state": "TX",
+      "zip": "75001"
+    },
+    "phone": "(972) 555-0391",
+    "npi": "3456789012",
+    "agentId": "agent_3",
+    "status": "active",
+    "createdAt": "2025-01-10T11:15:00Z"
+  }
+]
