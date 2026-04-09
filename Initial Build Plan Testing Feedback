@@ -1,0 +1,67 @@
+Here are the issues that I found:
+
+**General issues for every view**
+1. The "Alerts" button at the top right of the program should contain a dropdown icon that can be clicked. When this dropdown icon is clicked, a small alerts/notifications window should slide down and appear under that button, showcasing the alerts/notifications. BUT if the actual "Alerts" button is selected, then it takes them to that Alerts page that it usually takes people to right now.
+2. I need the program to be able to fit within the resolution and aspect ratio of every single device. This is primarily going to be a computer-based program; however, I do want to make it mobile responsive in case there are scenarios where it is applicable. I noticed, as I zoomed in to the site, it started to not show certain aspects of the site as it was zooming in. I needed to be able to respond accordingly to each size that it is going to be on every mobile device. It needs to be responsive in every aspect ratio and every resolution. It needs to be able to fit everything in that screen.
+
+**Under the Staff Admin view**
+
+1. Under the Claims > Claims Management > Denied / Action Required view, there is a "View Details" button that does not work.
+2. When I click "View Details" for a claim thats under the Claims > Claims Management > Denied / Action Required view, nothing happens. However, if I click the "Track Status" tab to the left of the "Denied / Action Required" tab, that's when the pop that contains the details of the claim appears. Odd behavior that shouldnt happen like that.
+3. On the Patients lookup page (Home > Patients), the only thing that appears visibly on that page is the "Patient lookup" label, the number of patient records found (ex: it says 20 patient records), and the search bar. The patient record list under it or whatever it is supposed to show as is not showing. If you hover your mouse to where patient records are supposed to show and click, a patient record does indeed pop up. But like I said, the initial list or view of the patient records do not show on the Patients page.
+4. On a Patient record view, theres a box area at the top where the patients name and info is. In there, specifically the part that shows their gender, it may not be capatilized properly. Make sure when it mentions their gender, it shows it as "Male" with a capital M or "Female" with a capital F.
+5. On a Patient record view, the box area at the top that shows the patients name and info shows their email address. Add a "Copy to Clipboard" hyperlink icon + functionality to the right of that email address area. 
+6. On a Patient record view, the box area at the top that shows the patients name and info shows their street address. Add a "Copy to Clipboard" hyperlink icon + functionality to the right of that street address area.
+7. On the Eligibility Verification page, there are no patients to search or select to verify their insurance eligibility and benefits.
+8. On the bottom of the Recalls page, I see the Automation Settings dropdown. It shows the 1st, 2nd, and 3rd reminder cards and the scheduled time intervals to remind overdue recalls. One thing I did not see was the ability for Staff Admins to configure the time intervals for each of the 1st, 2nd, and 3rd reminder cards. Nothing is selectable in that area besides the dropdown itself. Please make sure 1) we plan for that functionality later on and 2) we're showcasing the ability to do that in this prototype.
+9. On the Recalls page, I noticed patient recall reminder records that show the email icon but they also then only showcase the phone number of the patient in the beginning of that patient recall reminder record. Make sure that an email correlates to its email icon, and likewise for phone icons on those recall reminders. It looks more accurate that way.
+10. On the Claims page, under the "Submit New" tab, theres just a Patient Search search bar that appears and nothing else. Even when you interact with the search bar and attempt to search a name up, nothing comes up. I need you to add that Patient search bar under the Track Status tab so users can search for claims by the patient name. As for the "Submit New" tab, that page should show a form with fields required to fill out the details that are required from the initial details of claims that you've shown on claim mock data you came up with. Review some of the claim mock data that exists under here and make fields that you know a staff user or staff admin would need to fill out to create that claim.
+11. On a Claim record for a patient, I want you to add an "i" icon to the right of these categories that can show a message explaining what that category means when a mouse clicks that icon. The categories im talking about are these ones: Procedure, Tooth#, Fee, Allowed, Paid, and Adj.
+12. On the Claims page, under the "Denied / Action Required", there needs to be way to upload docs that are related to the claim and there should also be a way for themselves as well as others to be able to view those docs and details (as long as they have the right permissions).
+13. On the EOB page, I clicked the Sync Now button and it did show the animation of it loading and then stopping but I did notice that the text to the left of it that says "Last sync: 2h ago" did not update at all. Make sure that it is updating that to show "Last Synced: Now" and continue to count after that as it should. That's important for the prototype demo.
+14. On an EOB Detail record, I want you to add an "i" icon to the right of these categories that can show a message explaining what that category means when a mouse clicks that icon. The categories im talking about are these ones: Procedure, Tooth#, Fee, Allowed, Deduct., Paid, PT Resp, and Adj.
+15. For the Automations page, I need you to confirm whether or not Staff Admins are supposed to be seeing this page or not. I think I may just be the one that doesnt understand so I just want you to verify that for me please.
+16. On the Settings page, make sure that the text fields are editable & the switches are togglable. Also, make sure to add a "Save Changes" button on that page so people can save the changes that they make ONLY when it detects they made changes. Again, this is just to showcase the UI part of the prototype during the demo. Its to embody what the functionality will act and look like.
+17. On the Settings page, make sure that the Invite user button brings up a pop up that asks for user account details. When they fill out the user account details, make sure that it shows a "Successfully created [user's name here]'s account" message in a green box at the bottom middle of the screen. Only show that message when ALL of the user account fields are filled out. If any are empty, showcase a red message box at the top of the pop up.
+
+**Under the Staff User view**
+1. On the dashboard, the "Run Eligibility Check" button does not do anything when clicked. When it is clicked, it shoud lead the user to the "Track Status" .
+2. On the dashboard, the "Check Claim Status" button does not do anything when clicked. When it is clicked, it should lead the user to a pop up showcasing the partsthe "Track Status" tab on the Claims page. 
+3. On the dashboard, the "View Recalls" button does not do anything when clicked. When it is clicked, it should lead the user to the Recalls page.
+4. On the dashboard, theres a "Pending Tasks" container at the top of the dashboard page. When a user hovers over the number part of that card, it should show a message that shows the breakdown of tasks, what they are, and where they coming from.
+5. On the dashboard, I need you to explain what the "Success Rate" and "My Jobs Today" cards that show on the top of the dashboard page. I can't figure out what they mean. They don't lead anything and are not clickable. I just want to know what they are meant for.
+6. I noticed that I could see notifications that are not usually viewable on the application for Staff Users. For example, I could see the mock automation failure notification and click on it and have it take me to that page which should not be allowed at this time. I know this is just a prototype to showcase what the program would like but I want to make it as close to perfection UI-wise as we can before we work on the backend. So make sure to adjust & tailor the UI permissions for each user as needed.
+7. On the Claims page, under claim records that are in denied status, you should add the same "Resubmit" button to the pop up window of the claim record.
+
+**Under the IT Admin view**
+1. On the left side of the program, there's the clinic sidebar, and it shows all three clinics. I see there are little circle icons with a green or red symbol, and it makes me think, "Oh, this is the clinic's status, right? Is it doing well? Is it down? Is it off, disabled, that kind of thing?"
+- Green is "Oh, it's green, online, ready to go."
+- Red is "It's disabled, offline."
+- Flashing red could mean "It may be experiencing issues."  I would add two little column names on that sidebar for "Name" and "Address" under the clinic name, right after the format or break. On the right side of that sidebar, where the green and red icons are to show the status of the clinic, it should put the column name "Status".
+
+2. I can see the three containers that say "clinic health" on the main dashboard page, and I like how they look. I want the cards for each clinic to be selectable so that when a pop-up appears, it showcases very similar data to what is shown on the card:
+- the name
+- the status of it
+- the last heartbeat  explaining what four things are queued and what 28 things are completed, and anything else that's relevant to that clinic health from a pop-up window view. Something that's a little bit more detailed than the regular smaller container view that's shown on the main dashboard page.
+
+3. The Add Clinic Quick Action button on the main dashboard page under Quick Actions does not do anything when you click it. I want the UI to showcase a form with the details needed to add a clinic.
+
+4. The push agent update button under the quick action section on the main dashboard page does not do anything when you click it. I need it to bring a pop-up window that showcases the agents page and actions that it can complete on that agents page. We're trying to embody quick actions for this pop-up window. Don't allow everything; however, just the simple quick actions UI when this pop-up appears for the agents, specifically because this button is the push agent update button.
+
+5. For the section that reads "Recent system alerts", I want each record, alert, and notification on that list to be selectable, and then a pop-up window appears showcasing the details of that system alert.
+
+6. On the agents page, I noticed that if I look at and click the View Logs button on one clinic, it will showcase the logs properly. If I click the View Logs button for another clinic, it'll minimize the previous one I opened and maximize the logs of the next View Logs button that I click. That should not be the case. It should allow the previous View Logs execution to still show without minimizing it to go on to the next one.
+
+7. The configure button on the settings page does not show anything at this time. When that button is clicked, it needs to showcase a pop-up window with all the fields that are relevant to the settings regarding the system-wide configuration for that specific clinic. Again, I may not have mentioned this, but this is under the clinics tab within the settings page.
+
+8. The Add Clinic button under the Clinics tab in the Settings page does not do anything. When that button is clicked, a pop-up window needs to appear to showcase all the fields that need to be filled out in order to create a clinic record.
+
+9. I think we should show configure buttons on the payer adapters tab under the settings page for each option we have, but I want you to research this and confirm first before we do any implementation of it.
+
+10. The invite user button under the users tab on the settings page does not work or do anything when it's clicked. When that button is clicked, a pop-up window needs to appear to showcase all the fields that need to be filled out in order to create a user account.
+
+
+**General questions about the program**
+1. I see the API connected message at the top but should that be visible for everyone?
+2. What does the Jobs Today container on the IT admin dashboard mean? Is it different than the Jobs Today containers that appear on other dashboards, or no?
+3. 

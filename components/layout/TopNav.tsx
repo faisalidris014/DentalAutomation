@@ -1,12 +1,15 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, ShieldCheck, CalendarClock,
-  FileText, FileSpreadsheet, Zap, HardDrive, Settings, Bell, Activity
+  FileText, FileSpreadsheet, Zap, HardDrive, Settings, Bell, Activity,
+  Menu, X
 } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 import { RoleSwitcher } from './RoleSwitcher';
+import { AlertsDropdown } from './AlertsDropdown';
 import { Avatar } from '@/components/ui/Avatar';
 import { StatusDot } from '@/components/ui/StatusDot';
 import { NavPill } from '@/components/ui/NavPill';
@@ -38,59 +41,108 @@ export function TopNav({ unreadCount = 0 }: TopNavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { role, currentUser } = useRole();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const visibleItems = navItems.filter(item => item.roles.includes(role));
 
+  // Close mobile menu on navigation
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Close on click outside
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [mobileMenuOpen]);
+
   return (
-    <nav className="topnav">
-      <div className="topnav__left">
-        <div className="topnav__brand" onClick={() => router.push('/dashboard')}>
-          <Activity size={22} style={{ color: 'var(--accent)' }} />
-          <div className="topnav__brand-text">
-            <span className="topnav__brand-name">DentalFlow</span>
-            <span className="topnav__brand-sub">by NiftyByte</span>
+    <div ref={menuRef}>
+      <nav className="topnav">
+        <div className="topnav__left">
+          <button
+            className="topnav__hamburger"
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+
+          <div className="topnav__brand" onClick={() => router.push('/dashboard')}>
+            <Activity size={22} style={{ color: 'var(--accent)' }} />
+            <div className="topnav__brand-text">
+              <span className="topnav__brand-name">DentalFlow</span>
+              <span className="topnav__brand-sub">by NiftyByte</span>
+            </div>
+          </div>
+
+          <div className="topnav__pills">
+            {visibleItems.map(item => {
+              const Icon = item.icon;
+              return (
+                <NavPill
+                  key={item.path}
+                  active={pathname === item.path || pathname.startsWith(item.path + '/')}
+                  onClick={() => router.push(item.path)}
+                  icon={<Icon size={15} />}
+                  badge={item.path === '/notifications' ? unreadCount : undefined}
+                >
+                  {item.label}
+                </NavPill>
+              );
+            })}
           </div>
         </div>
 
-        <div className="topnav__pills">
+        <div className="topnav__right">
+          <div className="topnav__api-status">
+            <StatusDot variant="green" size={6} />
+            <span className="topnav__api-label mono">API Connected</span>
+          </div>
+
+          {(role === 'staff_admin' || role === 'staff_user') && (
+            <AlertsDropdown
+              unreadCount={unreadCount}
+              isActive={pathname === '/notifications'}
+              onNavigate={() => router.push('/notifications')}
+            />
+          )}
+
+          <RoleSwitcher />
+
+          <Avatar initials={currentUser.initials} size={32} />
+        </div>
+      </nav>
+
+      {/* Mobile dropdown menu */}
+      {mobileMenuOpen && (
+        <div className="topnav__mobile-menu">
           {visibleItems.map(item => {
             const Icon = item.icon;
+            const isActive = pathname === item.path || pathname.startsWith(item.path + '/');
             return (
-              <NavPill
+              <button
                 key={item.path}
-                active={pathname === item.path || pathname.startsWith(item.path + '/')}
-                onClick={() => router.push(item.path)}
-                icon={<Icon size={15} />}
-                badge={item.path === '/notifications' ? unreadCount : undefined}
+                className={`topnav__mobile-item ${isActive ? 'topnav__mobile-item--active' : ''}`}
+                onClick={() => {
+                  router.push(item.path);
+                  setMobileMenuOpen(false);
+                }}
               >
-                {item.label}
-              </NavPill>
+                <Icon size={18} />
+                <span>{item.label}</span>
+              </button>
             );
           })}
         </div>
-      </div>
-
-      <div className="topnav__right">
-        <div className="topnav__api-status">
-          <StatusDot variant="green" size={6} />
-          <span className="topnav__api-label mono">API Connected</span>
-        </div>
-
-        {(role === 'staff_admin' || role === 'staff_user') && (
-          <NavPill
-            active={pathname === '/notifications'}
-            onClick={() => router.push('/notifications')}
-            icon={<Bell size={15} />}
-            badge={unreadCount}
-          >
-            Alerts
-          </NavPill>
-        )}
-
-        <RoleSwitcher />
-
-        <Avatar initials={currentUser.initials} size={32} />
-      </div>
+      )}
 
       <style jsx>{`
         .topnav {
@@ -110,6 +162,20 @@ export function TopNav({ unreadCount = 0 }: TopNavProps) {
           display: flex;
           align-items: center;
           gap: var(--space-xl);
+        }
+        .topnav__hamburger {
+          display: none;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: var(--radius-sm);
+          color: var(--text-secondary);
+          transition: all var(--transition-fast);
+        }
+        .topnav__hamburger:hover {
+          background: rgba(255, 255, 255, 0.06);
+          color: var(--text-primary);
         }
         .topnav__brand {
           display: flex;
@@ -165,7 +231,67 @@ export function TopNav({ unreadCount = 0 }: TopNavProps) {
           color: var(--green);
           font-weight: 500;
         }
+        .topnav__mobile-menu {
+          display: none;
+          position: absolute;
+          top: var(--nav-height);
+          left: 0;
+          right: 0;
+          background: var(--bg-deep);
+          border-bottom: 1px solid var(--border);
+          z-index: 499;
+          padding: var(--space-sm);
+          flex-direction: column;
+          gap: 2px;
+          animation: fadeIn 200ms ease forwards;
+          box-shadow: var(--shadow-lg);
+        }
+        .topnav__mobile-item {
+          display: flex;
+          align-items: center;
+          gap: var(--space-md);
+          width: 100%;
+          padding: var(--space-md) var(--space-lg);
+          border-radius: var(--radius-sm);
+          font-size: var(--text-base);
+          color: var(--text-secondary);
+          transition: all var(--transition-fast);
+        }
+        .topnav__mobile-item:hover {
+          background: rgba(255, 255, 255, 0.04);
+          color: var(--text-primary);
+        }
+        .topnav__mobile-item--active {
+          background: var(--accent-dim);
+          color: var(--accent-text);
+        }
+
+        /* Hide API status on small screens */
+        @media (max-width: 640px) {
+          .topnav__api-status {
+            display: none;
+          }
+        }
+
+        /* Mobile nav: hamburger + mobile menu */
+        @media (max-width: 768px) {
+          .topnav__hamburger {
+            display: flex;
+          }
+          .topnav__pills {
+            display: none;
+          }
+          .topnav__brand-sub {
+            display: none;
+          }
+          .topnav__mobile-menu {
+            display: flex;
+          }
+          .topnav__left {
+            gap: var(--space-md);
+          }
+        }
       `}</style>
-    </nav>
+    </div>
   );
 }

@@ -39,6 +39,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           padding: var(--space-lg);
           overflow-y: auto;
           background: var(--bg-deepest);
+          min-width: 0;
+        }
+        @media (max-width: 768px) {
+          .app-main {
+            padding: var(--space-md);
+          }
+        }
+        @media (max-width: 480px) {
+          .app-main {
+            padding: var(--space-sm) var(--space-md);
+          }
         }
       `}</style>
     </RoleProvider>

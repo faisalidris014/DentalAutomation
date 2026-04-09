@@ -27,8 +27,30 @@ const mockClinics: (Clinic & { agentStatus: 'online' | 'offline' | 'updating' })
 export function Sidebar() {
   const { role } = useRole();
   const [collapsed, setCollapsed] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    function handleResize() {
+      const width = window.innerWidth;
+      if (width <= 768) {
+        setHidden(true);
+      } else {
+        setHidden(false);
+        if (width <= 1024) {
+          setCollapsed(true);
+        }
+      }
+    }
+
+    // Run on mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (role !== 'it_admin') return null;
+  if (hidden) return null;
 
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
@@ -45,6 +67,11 @@ export function Sidebar() {
       </div>
 
       {!collapsed && (
+        <>
+        <div className="sidebar__col-header">
+          <span>Name / Address</span>
+          <span>Status</span>
+        </div>
         <div className="sidebar__list">
           {mockClinics.map(clinic => (
             <div key={clinic.id} className="sidebar__clinic">
@@ -59,6 +86,7 @@ export function Sidebar() {
             </div>
           ))}
         </div>
+        </>
       )}
 
       <style jsx>{`
@@ -105,6 +133,18 @@ export function Sidebar() {
         .sidebar__toggle:hover {
           background: rgba(255, 255, 255, 0.06);
           color: var(--text-secondary);
+        }
+        .sidebar__col-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-sm) var(--space-md);
+          font-size: var(--text-xs);
+          font-weight: 600;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          border-bottom: 1px solid var(--border);
         }
         .sidebar__list {
           flex: 1;

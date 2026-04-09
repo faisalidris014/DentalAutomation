@@ -61,7 +61,7 @@ const agents: AgentData[] = [
 
 export default function AgentsPage() {
   const { role } = useRole();
-  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+  const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set());
 
   if (role !== 'it_admin') {
     return (
@@ -89,7 +89,7 @@ export default function AgentsPage() {
 
       <div className="agents-grid">
         {agents.map((agent, i) => {
-          const isExpanded = expandedAgent === agent.id;
+          const isExpanded = expandedAgents.has(agent.id);
           const isOutdated = agent.version !== agent.latestVersion;
           const statusVariant = agent.status === 'online' ? 'green' : agent.status === 'updating' ? 'amber' : 'red';
 
@@ -107,7 +107,12 @@ export default function AgentsPage() {
                     </div>
                   </div>
                 </div>
-                <button className="expand-btn" onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}>
+                <button className="expand-btn" onClick={() => setExpandedAgents(prev => {
+                  const next = new Set(prev);
+                  if (next.has(agent.id)) next.delete(agent.id);
+                  else next.add(agent.id);
+                  return next;
+                })}>
                   {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
               </div>
@@ -146,7 +151,12 @@ export default function AgentsPage() {
                     <Upload size={12} /> Push Update
                   </button>
                 )}
-                <button className="btn-ghost-sm" onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}>
+                <button className="btn-ghost-sm" onClick={() => setExpandedAgents(prev => {
+                  const next = new Set(prev);
+                  if (next.has(agent.id)) next.delete(agent.id);
+                  else next.add(agent.id);
+                  return next;
+                })}>
                   <FileText size={12} /> View Logs
                 </button>
               </div>

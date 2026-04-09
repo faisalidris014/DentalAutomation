@@ -306,3 +306,78 @@ img {
   align-items: center;
   gap: var(--space-sm);
 }
+
+/* --- Responsive Utilities --- */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- Responsive Breakpoints --- */
+
+/* Large desktop down */
+@media (max-width: 1280px) {
+  :root {
+    --space-2xl: 36px;
+    --space-xl: 28px;
+  }
+}
+
+/* Tablet landscape / small desktop */
+@media (max-width: 1024px) {
+  :root {
+    --space-2xl: 32px;
+    --space-xl: 24px;
+    --sidebar-width: 220px;
+  }
+
+  .app-main {
+    padding: var(--space-md);
+  }
+}
+
+/* Tablet portrait */
+@media (max-width: 768px) {
+  :root {
+    --space-lg: 16px;
+    --space-xl: 20px;
+    --space-2xl: 28px;
+    --text-3xl: 1.5rem;
+    --text-2xl: 1.25rem;
+    --text-xl: 1.125rem;
+  }
+
+  body {
+    font-size: var(--text-sm);
+  }
+
+  .modal,
+  [class*="modal"] {
+    --modal-max-width: 560px;
+    width: min(90vw, var(--modal-max-width)) !important;
+    max-width: 90vw !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  :root {
+    --space-lg: 12px;
+    --space-xl: 16px;
+    --space-2xl: 24px;
+    --space-md: 12px;
+    --text-3xl: 1.375rem;
+    --text-2xl: 1.125rem;
+    --nav-height: 56px;
+  }
+
+  .toast-container {
+    left: var(--space-md);
+    right: var(--space-md);
+    bottom: var(--space-md);
+  }
+
+  .toast {
+    width: 100%;
+  }
+}

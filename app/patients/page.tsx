@@ -118,8 +118,7 @@ export default function PatientsPage() {
             return (
               <div
                 key={patient.id}
-                className={`stagger-${(i % 8) + 1}`}
-                style={{ opacity: 0, animation: 'fadeIn var(--transition-base) ease forwards' }}
+                style={{ opacity: 0, animation: `fadeIn var(--transition-base) ease ${(i % 8) * 60}ms forwards` }}
               >
                 <Card
                   hoverable

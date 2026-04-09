@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, Shield, Calendar, FileText, MessageSquare,
-  Mail, Phone, MapPin, User as UserIcon,
+  Mail, Phone, MapPin, User as UserIcon, Copy, Check,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
@@ -95,6 +95,13 @@ export default function PatientDetailPage() {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('insurance');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -197,7 +204,7 @@ export default function PatientDetailPage() {
       : patient.address
       ? `${(patient.address as { street: string; city: string; state: string; zip: string }).street}, ${(patient.address as { street: string; city: string; state: string; zip: string }).city}, ${(patient.address as { street: string; city: string; state: string; zip: string }).state} ${(patient.address as { street: string; city: string; state: string; zip: string }).zip}`
       : '';
-  const genderLabel = patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : patient.gender;
+  const genderLabel = ['m', 'male'].includes(patient.gender?.toLowerCase?.() ?? '') ? 'Male' : ['f', 'female'].includes(patient.gender?.toLowerCase?.() ?? '') ? 'Female' : patient.gender;
 
   return (
     <div className="detail-page">
@@ -228,6 +235,14 @@ export default function PatientDetailPage() {
                   <span className="meta-divider" />
                   <span className="meta-item">
                     <Mail size={12} /> {patient.email}
+                    <button
+                      className="copy-btn"
+                      onClick={() => handleCopy(patient.email!, 'email')}
+                      title="Copy email"
+                    >
+                      {copiedField === 'email' ? <Check size={12} /> : <Copy size={12} />}
+                      {copiedField === 'email' && <span className="copied-text">Copied!</span>}
+                    </button>
                   </span>
                 </>
               )}
@@ -236,6 +251,14 @@ export default function PatientDetailPage() {
               <div className="patient-header__address">
                 <MapPin size={12} />
                 <span>{addr}</span>
+                <button
+                  className="copy-btn"
+                  onClick={() => handleCopy(addr, 'address')}
+                  title="Copy address"
+                >
+                  {copiedField === 'address' ? <Check size={12} /> : <Copy size={12} />}
+                  {copiedField === 'address' && <span className="copied-text">Copied!</span>}
+                </button>
               </div>
             )}
           </div>
@@ -343,6 +366,27 @@ export default function PatientDetailPage() {
           font-size: var(--text-xs);
           color: var(--text-tertiary);
           margin-top: 2px;
+        }
+        .copy-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 2px 6px;
+          border-radius: var(--radius-sm);
+          color: var(--text-muted);
+          transition: all var(--transition-fast);
+          cursor: pointer;
+          margin-left: 2px;
+        }
+        .copy-btn:hover {
+          color: var(--accent-text);
+          background: rgba(34, 211, 238, 0.1);
+        }
+        .copied-text {
+          font-size: 10px;
+          color: var(--green);
+          font-weight: 500;
+          animation: fadeIn 150ms ease;
         }
         .tab-bar {
           display: flex;

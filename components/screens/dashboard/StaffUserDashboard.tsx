@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
   ClipboardList,
   Clock,
@@ -15,6 +16,7 @@ import {
 import { KPICard } from '@/components/ui/KPICard';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { formatCurrency, formatTime } from '@/lib/formatters';
 
 const appointments = [
@@ -47,34 +49,42 @@ const jobStatusMap: Record<string, { variant: 'green' | 'cyan' | 'red' | 'amber'
 };
 
 export function StaffUserDashboard() {
+  const router = useRouter();
+
   return (
     <div className="staff-user-dashboard">
       <div className="section-title">My Dashboard</div>
 
       <div className="kpi-grid">
         <div className="kpi-animate" style={{ animationDelay: '0ms' }}>
-          <KPICard
-            label="My Jobs Today"
-            value={5}
-            icon={<ClipboardList size={20} />}
-            accentColor="var(--accent)"
-          />
+          <Tooltip content="Automation jobs triggered by or assigned to you today">
+            <KPICard
+              label="My Jobs Today"
+              value={5}
+              icon={<ClipboardList size={20} />}
+              accentColor="var(--accent)"
+            />
+          </Tooltip>
         </div>
         <div className="kpi-animate" style={{ animationDelay: '60ms' }}>
-          <KPICard
-            label="Pending Tasks"
-            value={3}
-            icon={<Clock size={20} />}
-            accentColor="var(--amber)"
-          />
+          <Tooltip content="2 eligibility verifications, 1 recall follow-up">
+            <KPICard
+              label="Pending Tasks"
+              value={3}
+              icon={<Clock size={20} />}
+              accentColor="var(--amber)"
+            />
+          </Tooltip>
         </div>
         <div className="kpi-animate" style={{ animationDelay: '120ms' }}>
-          <KPICard
-            label="Success Rate"
-            value="100%"
-            icon={<TrendingUp size={20} />}
-            accentColor="var(--green)"
-          />
+          <Tooltip content="Percentage of your jobs today that completed successfully">
+            <KPICard
+              label="Success Rate"
+              value="100%"
+              icon={<TrendingUp size={20} />}
+              accentColor="var(--green)"
+            />
+          </Tooltip>
         </div>
       </div>
 
@@ -119,15 +129,15 @@ export function StaffUserDashboard() {
         <div className="sidebar-section">
           <div className="section-title">Quick Actions</div>
           <div className="actions-grid">
-            <button className="action-btn">
+            <button className="action-btn" onClick={() => router.push('/eligibility')}>
               <ShieldCheck size={18} />
               <span>Run Eligibility Check</span>
             </button>
-            <button className="action-btn action-btn--secondary">
+            <button className="action-btn action-btn--secondary" onClick={() => router.push('/claims?tab=track')}>
               <FileSearch size={18} />
               <span>Check Claim Status</span>
             </button>
-            <button className="action-btn action-btn--secondary">
+            <button className="action-btn action-btn--secondary" onClick={() => router.push('/recalls')}>
               <BellRing size={18} />
               <span>View Recalls</span>
             </button>

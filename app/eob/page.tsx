@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { NavPill } from '@/components/ui/NavPill';
+import { InfoIcon } from '@/components/ui/InfoIcon';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import type { EOB } from '@/types';
 
@@ -78,6 +79,22 @@ export default function EOBPage() {
   const [selectedEOB, setSelectedEOB] = useState<EOB | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [syncLabel, setSyncLabel] = useState('2h ago');
+
+  useEffect(() => {
+    if (!lastSyncTime) return;
+    const update = () => {
+      const diff = Math.floor((Date.now() - lastSyncTime.getTime()) / 1000);
+      if (diff < 5) setSyncLabel('Just now');
+      else if (diff < 60) setSyncLabel(`${diff}s ago`);
+      else if (diff < 3600) setSyncLabel(`${Math.floor(diff / 60)}m ago`);
+      else setSyncLabel(`${Math.floor(diff / 3600)}h ago`);
+    };
+    update();
+    const id = setInterval(update, 10000);
+    return () => clearInterval(id);
+  }, [lastSyncTime]);
 
   const filtered = selectedPayer === 'All'
     ? mockEOBs
@@ -85,7 +102,10 @@ export default function EOBPage() {
 
   const handleSync = () => {
     setSyncing(true);
-    setTimeout(() => setSyncing(false), 2000);
+    setTimeout(() => {
+      setSyncing(false);
+      setLastSyncTime(new Date());
+    }, 2000);
   };
 
   const handleDownload = () => {
@@ -103,7 +123,7 @@ export default function EOBPage() {
         <div className="eob-header__actions">
           <div className="eob-sync-status">
             <Clock size={14} />
-            <span className="mono">Last sync: 2h ago</span>
+            <span className="mono">Last sync: {syncLabel}</span>
           </div>
           <button className="btn-secondary" onClick={handleSync}>
             <RefreshCw size={14} className={syncing ? 'spinning' : ''} />
@@ -183,14 +203,14 @@ export default function EOBPage() {
             <table className="eob-detail__table">
               <thead>
                 <tr>
-                  <th>Procedure</th>
-                  <th>Tooth</th>
-                  <th>Fee</th>
-                  <th>Allowed</th>
-                  <th>Deduct.</th>
-                  <th>Paid</th>
-                  <th>Pt Resp</th>
-                  <th>Adj</th>
+                  <th style={{ display: 'inline-flex', alignItems: 'center' }}>Procedure<InfoIcon text="The CDT code and description of the dental service performed" /></th>
+                  <th style={{ display: 'inline-flex', alignItems: 'center' }}>Tooth<InfoIcon text="Tooth number using the Universal Numbering System" /></th>
+                  <th style={{ display: 'inline-flex', alignItems: 'center' }}>Fee<InfoIcon text="Amount billed by the provider for this service" /></th>
+                  <th style={{ display: 'inline-flex', alignItems: 'center' }}>Allowed<InfoIcon text="Maximum amount the insurance plan covers for this service" /></th>
+                  <th style={{ display: 'inline-flex', alignItems: 'center' }}>Deduct.<InfoIcon text="Portion applied to the patient's annual deductible" /></th>
+                  <th style={{ display: 'inline-flex', alignItems: 'center' }}>Paid<InfoIcon text="Amount actually paid by the insurance carrier" /></th>
+                  <th style={{ display: 'inline-flex', alignItems: 'center' }}>Pt Resp<InfoIcon text="Total amount the patient is responsible for paying" /></th>
+                  <th style={{ display: 'inline-flex', alignItems: 'center' }}>Adj<InfoIcon text="Difference between the billed fee and the allowed amount (write-off)" /></th>
                 </tr>
               </thead>
               <tbody>

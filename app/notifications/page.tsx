@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { NavPill } from '@/components/ui/NavPill';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { useRole } from '@/context/RoleContext';
 import { formatRelativeTime } from '@/lib/formatters';
 
 interface MockNotification {
@@ -47,7 +48,15 @@ const filters = ['All', 'Unread', 'Failures', 'Denials', 'Action Required', 'Inf
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const { role } = useRole();
+  const [notifications, setNotifications] = useState(() =>
+    initialNotifications.filter(n => {
+      if (role === 'staff_user') {
+        if (n.linkTo === '/agents' || n.linkTo === '/settings') return false;
+      }
+      return true;
+    })
+  );
   const [filter, setFilter] = useState('All');
 
   const unreadCount = notifications.filter(n => !n.read && !n.dismissed).length;

@@ -51,6 +51,8 @@ export default function RecallsPage() {
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
   const [sendingAll, setSendingAll] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [intervals, setIntervals] = useState({ first: 7, second: 14, third: 30 });
+  const [settingsSaved, setSettingsSaved] = useState(false);
 
   useEffect(() => {
     getRecalls(currentClinic.id).then(data => {
@@ -180,7 +182,9 @@ export default function RecallsPage() {
                   <Avatar initials={getInitials(recall.patientName)} size={34} />
                   <div className="recall-patient-info">
                     <span className="recall-patient-name">{recall.patientName}</span>
-                    <span className="recall-patient-contact">{recall.phone}</span>
+                    <span className="recall-patient-contact">
+                      {recall.contactMethod === 'email' ? recall.email || recall.phone : recall.phone}
+                    </span>
                   </div>
                 </div>
 
@@ -261,20 +265,38 @@ export default function RecallsPage() {
               automatically based on the configured intervals below.
             </p>
             <div className="schedule-grid">
-              {[
-                { step: '1st Reminder', days: '7 days overdue', icon: <Clock size={16} /> },
-                { step: '2nd Reminder', days: '14 days overdue', icon: <Clock size={16} /> },
-                { step: '3rd Reminder', days: '30 days overdue', icon: <Clock size={16} /> },
-              ].map((s, i) => (
+              {([
+                { step: '1st Reminder', key: 'first' as const, icon: <Clock size={16} /> },
+                { step: '2nd Reminder', key: 'second' as const, icon: <Clock size={16} /> },
+                { step: '3rd Reminder', key: 'third' as const, icon: <Clock size={16} /> },
+              ]).map((s, i) => (
                 <div key={i} className="schedule-item">
                   <div className="schedule-icon">{s.icon}</div>
                   <div className="schedule-detail">
                     <span className="schedule-step">{s.step}</span>
-                    <span className="schedule-days mono">{s.days}</span>
+                    <div className="schedule-select-wrap">
+                      <select
+                        className="schedule-select"
+                        value={intervals[s.key]}
+                        onChange={e => setIntervals(prev => ({ ...prev, [s.key]: Number(e.target.value) }))}
+                      >
+                        {[3, 5, 7, 10, 14, 21, 30, 45, 60].map(d => (
+                          <option key={d} value={d}>{d} days overdue</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <Badge variant="cyan" size="sm">Active</Badge>
                 </div>
               ))}
+            </div>
+            <div className="schedule-actions">
+              <button
+                className="btn-save-settings"
+                onClick={() => { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 3000); }}
+              >
+                {settingsSaved ? 'Settings Saved \u2713' : 'Save Settings'}
+              </button>
             </div>
           </div>
         )}
@@ -558,6 +580,42 @@ export default function RecallsPage() {
         .schedule-days {
           font-size: var(--text-xs);
           color: var(--text-tertiary);
+        }
+        .schedule-select-wrap {
+          margin-top: 2px;
+        }
+        .schedule-select {
+          padding: 4px 8px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          color: var(--text-secondary);
+          font-size: var(--text-xs);
+          font-family: var(--font-mono);
+          cursor: pointer;
+          transition: border-color var(--transition-fast);
+        }
+        .schedule-select:focus {
+          border-color: var(--accent);
+          outline: none;
+        }
+        .schedule-actions {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: var(--space-md);
+        }
+        .btn-save-settings {
+          padding: 8px 20px;
+          background: var(--accent);
+          color: var(--bg-deepest);
+          font-weight: 600;
+          font-size: var(--text-sm);
+          border-radius: var(--radius-md);
+          transition: all var(--transition-fast);
+        }
+        .btn-save-settings:hover {
+          background: var(--accent-hover);
+          box-shadow: var(--shadow-glow);
         }
       `}</style>
     </div>

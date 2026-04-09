@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Send,
   CheckCircle2,
@@ -11,12 +12,15 @@ import {
   RefreshCw,
   ArrowRight,
   ClipboardList,
+  Upload,
+  File as FileIcon,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { NavPill } from '@/components/ui/NavPill';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Modal } from '@/components/ui/Modal';
+import { InfoIcon } from '@/components/ui/InfoIcon';
 import { Timeline } from '@/components/ui/Timeline';
 import { searchPatients, getClaims, submitClaim } from '@/lib/mockApi';
 import { formatCurrency, formatDate } from '@/lib/formatters';
@@ -50,8 +54,21 @@ function claimStatusBadgeVariant(status: string): 'green' | 'amber' | 'red' | 'c
 }
 
 export default function ClaimsPage() {
+  return (
+    <Suspense>
+      <ClaimsPageContent />
+    </Suspense>
+  );
+}
+
+function ClaimsPageContent() {
   const { currentClinic } = useRole();
-  const [activeTab, setActiveTab] = useState<ClaimsTab>('submit');
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<ClaimsTab>(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'track' || tab === 'denied') return tab;
+    return 'submit';
+  });
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loadingClaims, setLoadingClaims] = useState(true);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
@@ -65,9 +82,16 @@ export default function ClaimsPage() {
   const [submitStep, setSubmitStep] = useState(-1); // -1 = not started, 0-2 = steps, 3 = done
   const [submitRef, setSubmitRef] = useState('');
 
+  // Track Status search
+  const [trackSearchQuery, setTrackSearchQuery] = useState('');
+
   // Resubmit state
   const [resubmittingId, setResubmittingId] = useState<string | null>(null);
   const [resubmittedIds, setResubmittedIds] = useState<Set<string>>(new Set());
+
+  // Document upload state
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, string[]>>({});
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     getClaims(currentClinic.id).then(data => {
@@ -345,6 +369,9 @@ export default function ClaimsPage() {
       {/* ============= Track Status ============= */}
       {activeTab === 'track' && (
         <div className="track-tab">
+          <div style={{ maxWidth: 400, marginBottom: 'var(--space-md)' }}>
+            <SearchBar placeholder="Search claims by patient name..." value={trackSearchQuery} onChange={setTrackSearchQuery} />
+          </div>
           <Card padding="0">
             <div className="claims-table-wrap">
               <table className="claims-table">
@@ -367,12 +394,16 @@ export default function ClaimsPage() {
                         </td>
                       </tr>
                     ))
-                  ) : claims.length === 0 ? (
+                  ) : (() => {
+                    const filteredClaims = trackSearchQuery
+                      ? claims.filter(c => c.patientName.toLowerCase().includes(trackSearchQuery.toLowerCase()))
+                      : claims;
+                    return filteredClaims.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="empty-cell">No claims found.</td>
                     </tr>
                   ) : (
-                    claims.map(claim => (
+                    filteredClaims.map(claim => (
                       <tr
                         key={claim.id}
                         className="claims-row"
@@ -390,120 +421,12 @@ export default function ClaimsPage() {
                         <td className="mono">{claim.referenceNumber}</td>
                       </tr>
                     ))
-                  )}
+                  );
+                  })()}
                 </tbody>
               </table>
             </div>
           </Card>
-
-          {/* Claim Detail Modal */}
-          <Modal
-            open={!!selectedClaim}
-            onClose={() => setSelectedClaim(null)}
-            title={selectedClaim ? `Claim ${selectedClaim.referenceNumber}` : ''}
-            width="720px"
-          >
-            {selectedClaim && (
-              <div className="claim-detail">
-                <div className="detail-header-grid">
-                  <div className="detail-field">
-                    <span className="detail-label">Patient</span>
-                    <span className="detail-value">{selectedClaim.patientName}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-label">Payer</span>
-                    <span className="detail-value">{selectedClaim.payerName}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-label">Provider</span>
-                    <span className="detail-value">{selectedClaim.provider}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-label">Status</span>
-                    <Badge variant={claimStatusBadgeVariant(selectedClaim.status)} dot size="md">
-                      {selectedClaim.status}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="detail-section">
-                  <h4 className="detail-section-title">Claim Timeline</h4>
-                  <Timeline
-                    items={selectedClaim.timeline.map((t, i) => ({
-                      id: `tl-${i}`,
-                      timestamp: formatDate(t.date),
-                      title: t.status.charAt(0).toUpperCase() + t.status.slice(1),
-                      description: t.description,
-                      status: (
-                        t.status === 'paid' || t.status === 'approved' ? 'success' :
-                        t.status === 'denied' ? 'error' :
-                        t.status === 'partial' ? 'warning' :
-                        'info'
-                      ) as 'success' | 'info' | 'warning' | 'error',
-                    }))}
-                  />
-                </div>
-
-                <div className="detail-section">
-                  <h4 className="detail-section-title">Line Items</h4>
-                  <div className="line-items-table-wrap">
-                    <table className="line-items-table">
-                      <thead>
-                        <tr>
-                          <th>Procedure</th>
-                          <th>Tooth#</th>
-                          <th>Fee</th>
-                          <th>Allowed</th>
-                          <th>Paid</th>
-                          <th>Adj</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedClaim.lineItems.map((li, i) => (
-                          <tr key={i}>
-                            <td>
-                              <span className="mono">{li.procedureCode}</span>{' '}
-                              <span className="li-desc">{li.procedureDescription}</span>
-                            </td>
-                            <td className="mono">{li.toothNumber || '-'}</td>
-                            <td className="mono">{formatCurrency(li.fee)}</td>
-                            <td className="mono">{li.allowedAmount != null ? formatCurrency(li.allowedAmount) : '-'}</td>
-                            <td className="mono">{li.paidAmount != null ? formatCurrency(li.paidAmount) : '-'}</td>
-                            <td className="mono">{li.adjustmentAmount != null ? formatCurrency(li.adjustmentAmount) : '-'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div className="detail-summary">
-                  <div className="summary-item">
-                    <span className="summary-label">Total Billed</span>
-                    <span className="summary-value mono">{formatCurrency(selectedClaim.totalFee)}</span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">Total Allowed</span>
-                    <span className="summary-value mono">
-                      {selectedClaim.allowedAmount != null ? formatCurrency(selectedClaim.allowedAmount) : '-'}
-                    </span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">Total Paid</span>
-                    <span className="summary-value mono" style={{ color: 'var(--green)' }}>
-                      {selectedClaim.paidAmount != null ? formatCurrency(selectedClaim.paidAmount) : '-'}
-                    </span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">Patient Responsibility</span>
-                    <span className="summary-value mono" style={{ color: 'var(--amber)' }}>
-                      {selectedClaim.patientResp != null ? formatCurrency(selectedClaim.patientResp) : '-'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </Modal>
         </div>
       )}
 
@@ -582,11 +505,216 @@ export default function ClaimsPage() {
                     View Details
                   </button>
                 </div>
+
+                <div className="docs-section">
+                  <div className="docs-section-title">Documents</div>
+                  <input
+                    type="file"
+                    ref={el => { fileInputRefs.current[claim.id] = el; }}
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setUploadedDocs(prev => ({
+                          ...prev,
+                          [claim.id]: [...(prev[claim.id] || []), file.name],
+                        }));
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                  <button
+                    className="btn-upload-doc"
+                    onClick={() => fileInputRefs.current[claim.id]?.click()}
+                  >
+                    <Upload size={13} /> Upload File
+                  </button>
+                  {(uploadedDocs[claim.id] && uploadedDocs[claim.id].length > 0) ? (
+                    <div className="docs-list">
+                      {uploadedDocs[claim.id].map((name, i) => (
+                        <div key={i} className="doc-item">
+                          <FileIcon size={13} />
+                          <span>{name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="docs-empty">No documents uploaded</p>
+                  )}
+                </div>
               </Card>
             ))
           )}
         </div>
       )}
+
+      {/* ============= Claim Detail Modal (rendered at root level for all tabs) ============= */}
+      <Modal
+        open={!!selectedClaim}
+        onClose={() => setSelectedClaim(null)}
+        title={selectedClaim ? `Claim ${selectedClaim.referenceNumber}` : ''}
+        width="720px"
+      >
+        {selectedClaim && (
+          <div className="claim-detail">
+            <div className="detail-header-grid">
+              <div className="detail-field">
+                <span className="detail-label">Patient</span>
+                <span className="detail-value">{selectedClaim.patientName}</span>
+              </div>
+              <div className="detail-field">
+                <span className="detail-label">Payer</span>
+                <span className="detail-value">{selectedClaim.payerName}</span>
+              </div>
+              <div className="detail-field">
+                <span className="detail-label">Provider</span>
+                <span className="detail-value">{selectedClaim.provider}</span>
+              </div>
+              <div className="detail-field">
+                <span className="detail-label">Status</span>
+                <Badge variant={claimStatusBadgeVariant(selectedClaim.status)} dot size="md">
+                  {selectedClaim.status}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="detail-section">
+              <h4 className="detail-section-title">Claim Timeline</h4>
+              <Timeline
+                items={selectedClaim.timeline.map((t, i) => ({
+                  id: `tl-${i}`,
+                  timestamp: formatDate(t.date),
+                  title: t.status.charAt(0).toUpperCase() + t.status.slice(1),
+                  description: t.description,
+                  status: (
+                    t.status === 'paid' || t.status === 'approved' ? 'success' :
+                    t.status === 'denied' ? 'error' :
+                    t.status === 'partial' ? 'warning' :
+                    'info'
+                  ) as 'success' | 'info' | 'warning' | 'error',
+                }))}
+              />
+            </div>
+
+            <div className="detail-section">
+              <h4 className="detail-section-title">Line Items</h4>
+              <div className="line-items-table-wrap">
+                <table className="line-items-table">
+                  <thead>
+                    <tr>
+                      <th style={{ display: 'inline-flex', alignItems: 'center' }}>Procedure<InfoIcon text="The CDT code and description of the dental service performed" /></th>
+                      <th style={{ display: 'inline-flex', alignItems: 'center' }}>Tooth#<InfoIcon text="Tooth number using the Universal Numbering System" /></th>
+                      <th style={{ display: 'inline-flex', alignItems: 'center' }}>Fee<InfoIcon text="Amount billed by the provider for this service" /></th>
+                      <th style={{ display: 'inline-flex', alignItems: 'center' }}>Allowed<InfoIcon text="Maximum amount the insurance plan covers for this service" /></th>
+                      <th style={{ display: 'inline-flex', alignItems: 'center' }}>Paid<InfoIcon text="Amount actually paid by the insurance carrier" /></th>
+                      <th style={{ display: 'inline-flex', alignItems: 'center' }}>Adj<InfoIcon text="Difference between the billed fee and the allowed amount (write-off)" /></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedClaim.lineItems.map((li, i) => (
+                      <tr key={i}>
+                        <td>
+                          <span className="mono">{li.procedureCode}</span>{' '}
+                          <span className="li-desc">{li.procedureDescription}</span>
+                        </td>
+                        <td className="mono">{li.toothNumber || '-'}</td>
+                        <td className="mono">{formatCurrency(li.fee)}</td>
+                        <td className="mono">{li.allowedAmount != null ? formatCurrency(li.allowedAmount) : '-'}</td>
+                        <td className="mono">{li.paidAmount != null ? formatCurrency(li.paidAmount) : '-'}</td>
+                        <td className="mono">{li.adjustmentAmount != null ? formatCurrency(li.adjustmentAmount) : '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="detail-summary">
+              <div className="summary-item">
+                <span className="summary-label">Total Billed</span>
+                <span className="summary-value mono">{formatCurrency(selectedClaim.totalFee)}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Total Allowed</span>
+                <span className="summary-value mono">
+                  {selectedClaim.allowedAmount != null ? formatCurrency(selectedClaim.allowedAmount) : '-'}
+                </span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Total Paid</span>
+                <span className="summary-value mono" style={{ color: 'var(--green)' }}>
+                  {selectedClaim.paidAmount != null ? formatCurrency(selectedClaim.paidAmount) : '-'}
+                </span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Patient Responsibility</span>
+                <span className="summary-value mono" style={{ color: 'var(--amber)' }}>
+                  {selectedClaim.patientResp != null ? formatCurrency(selectedClaim.patientResp) : '-'}
+                </span>
+              </div>
+            </div>
+
+            {(selectedClaim.status === 'denied' || selectedClaim.status === 'partial') && (
+              <div className="docs-section" style={{ borderTop: '1px solid var(--border)', paddingTop: 'var(--space-md)' }}>
+                <div className="docs-section-title">Documents</div>
+                <input
+                  type="file"
+                  ref={el => { fileInputRefs.current[`modal_${selectedClaim.id}`] = el; }}
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && selectedClaim) {
+                      setUploadedDocs(prev => ({
+                        ...prev,
+                        [selectedClaim.id]: [...(prev[selectedClaim.id] || []), file.name],
+                      }));
+                    }
+                    e.target.value = '';
+                  }}
+                />
+                <button
+                  className="btn-upload-doc"
+                  onClick={() => fileInputRefs.current[`modal_${selectedClaim.id}`]?.click()}
+                >
+                  <Upload size={13} /> Upload File
+                </button>
+                {(uploadedDocs[selectedClaim.id] && uploadedDocs[selectedClaim.id].length > 0) ? (
+                  <div className="docs-list">
+                    {uploadedDocs[selectedClaim.id].map((name, i) => (
+                      <div key={i} className="doc-item">
+                        <FileIcon size={13} />
+                        <span>{name}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="docs-empty">No documents uploaded</p>
+                )}
+              </div>
+            )}
+
+            {(selectedClaim.status === 'denied' || selectedClaim.status === 'partial') && (
+              <div className="modal-resubmit">
+                {resubmittedIds.has(selectedClaim.id) ? (
+                  <span className="resubmit-confirm">Resubmitted &#10003;</span>
+                ) : (
+                  <button
+                    className="btn-resubmit"
+                    onClick={() => handleResubmit(selectedClaim.id)}
+                    disabled={resubmittingId === selectedClaim.id}
+                  >
+                    {resubmittingId === selectedClaim.id ? (
+                      <><Loader2 size={14} className="spin-icon" /> Resubmitting...</>
+                    ) : (
+                      <><RefreshCw size={14} /> Resubmit Claim</>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
 
       <style jsx>{`
         .claims-page {
@@ -1190,6 +1318,65 @@ export default function ClaimsPage() {
           font-weight: 600;
           color: var(--green);
           animation: fadeIn var(--transition-base) ease forwards;
+        }
+
+        .modal-resubmit {
+          display: flex;
+          justify-content: flex-end;
+          padding-top: var(--space-md);
+          border-top: 1px solid var(--border);
+          margin-top: var(--space-md);
+        }
+
+        /* Documents section */
+        .docs-section {
+          margin-top: var(--space-md);
+        }
+        .docs-section-title {
+          font-size: var(--text-xs);
+          font-weight: 600;
+          color: var(--text-tertiary);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          margin-bottom: var(--space-sm);
+        }
+        .btn-upload-doc {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 12px;
+          font-size: var(--text-xs);
+          font-weight: 500;
+          color: var(--text-secondary);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          transition: all var(--transition-fast);
+          cursor: pointer;
+        }
+        .btn-upload-doc:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: var(--border-hover);
+          color: var(--text-primary);
+        }
+        .docs-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          margin-top: var(--space-sm);
+        }
+        .doc-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: var(--text-xs);
+          color: var(--text-secondary);
+          padding: 4px 0;
+        }
+        .docs-empty {
+          font-size: var(--text-xs);
+          color: var(--text-muted);
+          margin-top: var(--space-sm);
         }
       `}</style>
     </div>
