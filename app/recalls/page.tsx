@@ -43,7 +43,7 @@ function daysOverdueColor(days: number): string {
 }
 
 export default function RecallsPage() {
-  const { currentClinic } = useRole();
+  const { role, currentClinic } = useRole();
   const [recalls, setRecalls] = useState<Recall[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<RecallFilter>('All');
@@ -246,7 +246,8 @@ export default function RecallsPage() {
         )}
       </div>
 
-      {/* Automation Settings */}
+      {/* Automation Settings — visible to admins only */}
+      {(role === 'staff_admin' || role === 'it_admin') && (
       <Card padding="0" className="automation-card">
         <button
           className="automation-toggle"
@@ -301,6 +302,7 @@ export default function RecallsPage() {
           </div>
         )}
       </Card>
+      )}
 
       <style jsx>{`
         .recalls-page {

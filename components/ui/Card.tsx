@@ -45,8 +45,8 @@ export function Card({
           border-radius: var(--radius-lg);
           padding: var(--card-padding);
           position: relative;
-          overflow: hidden;
-          animation: fadeIn var(--transition-base) ease forwards;
+          overflow: visible;
+          animation: fadeIn var(--transition-base) forwards;
         }
         .df-card--hoverable {
           cursor: pointer;

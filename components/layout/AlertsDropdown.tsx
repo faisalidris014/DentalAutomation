@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Bell, ChevronDown, AlertTriangle, XCircle, AlertCircle, Info, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { formatRelativeTime } from '@/lib/formatters';
+import { useRole } from '@/context/RoleContext';
 
 interface AlertNotification {
   id: string;
@@ -39,6 +40,12 @@ export function AlertsDropdown({ unreadCount, isActive, onNavigate }: AlertsDrop
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { role } = useRole();
+
+  const filteredAlerts = recentAlerts.filter(alert => {
+    if (role === 'staff_user' && alert.linkTo === '/automations') return false;
+    return true;
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -77,7 +84,7 @@ export function AlertsDropdown({ unreadCount, isActive, onNavigate }: AlertsDrop
             <span className="alerts-dropdown__count">{unreadCount} unread</span>
           </div>
           <div className="alerts-dropdown__list">
-            {recentAlerts.map(alert => {
+            {filteredAlerts.map(alert => {
               const cfg = categoryConfig[alert.category];
               const Icon = cfg.icon;
               return (

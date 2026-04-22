@@ -54,7 +54,7 @@ export function Tooltip({ content, children, position = 'top' }: TooltipProps) {
       <style jsx>{`
         .tooltip-trigger {
           position: relative;
-          display: inline-flex;
+          display: grid;
         }
         .tooltip-bubble {
           z-index: 9999;

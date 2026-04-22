@@ -118,7 +118,7 @@ export default function PatientsPage() {
             return (
               <div
                 key={patient.id}
-                style={{ opacity: 0, animation: `fadeIn var(--transition-base) ease ${(i % 8) * 60}ms forwards` }}
+                style={{ opacity: 0, animation: `fadeIn 250ms ease ${(i % 8) * 60}ms forwards` }}
               >
                 <Card
                   hoverable
@@ -182,7 +182,7 @@ export default function PatientsPage() {
           display: flex;
           flex-direction: column;
           gap: var(--space-lg);
-          animation: fadeIn var(--transition-base) ease forwards;
+          animation: fadeIn var(--transition-base) forwards;
         }
         .patients-header {
           display: flex;
@@ -283,7 +283,7 @@ export default function PatientsPage() {
           display: flex;
           gap: var(--space-md);
           opacity: 0;
-          animation: fadeIn var(--transition-base) ease forwards;
+          animation: fadeIn var(--transition-base) forwards;
         }
         .skeleton-avatar {
           width: 42px;

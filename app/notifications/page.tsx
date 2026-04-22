@@ -52,7 +52,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState(() =>
     initialNotifications.filter(n => {
       if (role === 'staff_user') {
-        if (n.linkTo === '/agents' || n.linkTo === '/settings') return false;
+        if (n.linkTo === '/agents' || n.linkTo === '/settings' || n.linkTo === '/automations') return false;
       }
       return true;
     })

@@ -9,6 +9,7 @@ import { KPICard } from '@/components/ui/KPICard';
 import { NavPill } from '@/components/ui/NavPill';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { formatDuration, formatRelativeTime, statusColor } from '@/lib/formatters';
+import { useRole } from '@/context/RoleContext';
 
 type JobType = 'eligibility' | 'eob_retrieval' | 'claim_submit' | 'claim_status' | 'recall_reminder' | 'patient_sync';
 type JobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
@@ -64,8 +65,19 @@ const statusIcons: Record<JobStatus, typeof CheckCircle2> = {
 };
 
 export default function AutomationsPage() {
+  const { role } = useRole();
   const [filter, setFilter] = useState('All');
   const router = useRouter();
+
+  if (role === 'staff_user') {
+    return (
+      <div style={{ padding: 'var(--space-2xl)', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+        <Zap size={48} style={{ opacity: 0.3, marginBottom: 'var(--space-md)' }} />
+        <h2 style={{ color: 'var(--text-secondary)' }}>Access Restricted</h2>
+        <p>Automation monitoring is available for Administrators only.</p>
+      </div>
+    );
+  }
 
   const filtered = filter === 'All'
     ? mockJobs

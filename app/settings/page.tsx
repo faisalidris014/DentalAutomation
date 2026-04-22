@@ -225,6 +225,16 @@ export default function SettingsPage() {
     });
   };
 
+  if (role === 'staff_user') {
+    return (
+      <div style={{ padding: 'var(--space-2xl)', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+        <Settings size={48} style={{ opacity: 0.3, marginBottom: 'var(--space-md)' }} />
+        <h2 style={{ color: 'var(--text-secondary)' }}>Access Restricted</h2>
+        <p>Settings are available for Administrators only.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="settings-page">
       <h1 className="page-title">Settings</h1>
