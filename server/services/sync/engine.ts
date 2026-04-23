@@ -30,14 +30,20 @@ export async function syncPatients(clinicId: string): Promise<SyncJobResult> {
 
   // Get last sync timestamp
   const existingPatients = await db
-    .select({ pmsPatientId: patientsCache.pmsPatientId, updatedAt: patientsCache.updatedAt })
+    .select({
+      pmsPatientId: patientsCache.pmsPatientId,
+      firstName: patientsCache.firstName,
+      lastName: patientsCache.lastName,
+      dateOfBirth: patientsCache.dateOfBirth,
+      status: patientsCache.status,
+    })
     .from(patientsCache)
     .where(eq(patientsCache.clinicId, clinicId));
 
   const existingMap = new Map(
     existingPatients.map((p) => [
       p.pmsPatientId,
-      { hash: '' }, // We'll re-fetch and compare
+      { hash: hashRecord({ firstName: p.firstName, lastName: p.lastName, dateOfBirth: p.dateOfBirth, status: p.status }) },
     ]),
   );
 

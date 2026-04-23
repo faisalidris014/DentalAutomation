@@ -43,6 +43,8 @@ export async function updateJobStatus(
     failedItems: number;
     result: unknown;
     errorMessage: string;
+    retryCount: number;
+    nextRetryAt: Date;
   }>,
 ): Promise<void> {
   await db

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { eq, and, or, ilike, sql, desc } from 'drizzle-orm';
+import { eq, and, or, ilike, sql, desc, inArray } from 'drizzle-orm';
 import { db } from '../db/connection';
 import { patientsCache, insuranceCache, claimsCache } from '../db/schema';
 import { withErrorHandler } from '../middleware/errorHandler';
@@ -51,7 +51,7 @@ export const listPatients = withErrorHandler(
             .from(insuranceCache)
             .where(
               and(
-                sql`${insuranceCache.patientId} = ANY(${patientIds})`,
+                inArray(insuranceCache.patientId, patientIds),
                 eq(insuranceCache.ordinal, 1),
               ),
             )

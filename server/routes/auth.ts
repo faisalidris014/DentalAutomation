@@ -45,7 +45,7 @@ export const loginHandler = withErrorHandler(
       .where(eq(users.id, user.id));
 
     return Response.json({
-      token: accessToken,
+      accessToken,
       refreshToken,
       user: {
         id: user.id,

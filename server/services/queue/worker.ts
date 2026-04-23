@@ -157,10 +157,12 @@ export async function processNextJob(): Promise<boolean> {
     const maxRetries = job.maxRetries ?? 3;
 
     if (retryCount < maxRetries) {
-      const nextRetry = new Date(Date.now() + 1000 * Math.pow(2, retryCount));
+      const nextRetryAt = new Date(Date.now() + 1000 * 60 * Math.pow(2, retryCount));
       await updateJobStatus(job.id, 'retrying', {
         durationMs,
         errorMessage,
+        retryCount: retryCount + 1,
+        nextRetryAt,
       });
     } else {
       await updateJobStatus(job.id, 'failed', {
