@@ -19,6 +19,9 @@ const configSchema = z.object({
     sandboxCustomerKey: z.string().optional(),
     apiBaseUrl: z.string().url(),
   }),
+  webhooks: z.object({
+    secret: z.string().optional(),
+  }),
   app: z.object({
     nodeEnv: z.enum(['development', 'production', 'test']),
     url: z.string().url(),
@@ -46,6 +49,9 @@ function loadConfig(): AppConfig {
       developerKey: process.env.OD_DEVELOPER_KEY ?? '',
       sandboxCustomerKey: process.env.OD_SANDBOX_CUSTOMER_KEY,
       apiBaseUrl: process.env.OD_API_BASE_URL ?? 'https://api.opendental.com/api/v1',
+    },
+    webhooks: {
+      secret: process.env.WEBHOOK_SECRET || undefined,
     },
     app: {
       nodeEnv: (process.env.NODE_ENV ?? 'development') as 'development' | 'production' | 'test',

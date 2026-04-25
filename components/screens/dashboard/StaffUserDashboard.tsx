@@ -1,6 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import type { StaffUserKPIs } from '@/types/api';
 import {
   ClipboardList,
   Clock,
@@ -50,6 +53,13 @@ const jobStatusMap: Record<string, { variant: 'green' | 'cyan' | 'red' | 'amber'
 
 export function StaffUserDashboard() {
   const router = useRouter();
+  const [kpis, setKpis] = useState<StaffUserKPIs | null>(null);
+
+  useEffect(() => {
+    api.get<{ data: StaffUserKPIs }>('/api/dashboard/kpis')
+      .then(res => setKpis(res.data))
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="staff-user-dashboard">
@@ -57,30 +67,31 @@ export function StaffUserDashboard() {
 
       <div className="kpi-grid">
         <div className="kpi-animate" style={{ animationDelay: '0ms' }}>
-          <Tooltip content="Automation jobs triggered by or assigned to you today">
+          <Tooltip content="Automation jobs completed by you today">
             <KPICard
-              label="My Jobs Today"
-              value={5}
+              label="Jobs Completed Today"
+              value={kpis?.jobsCompletedToday ?? '—'}
               icon={<ClipboardList size={20} />}
               accentColor="var(--accent)"
             />
           </Tooltip>
         </div>
         <div className="kpi-animate" style={{ animationDelay: '60ms' }}>
-          <Tooltip content="2 eligibility verifications, 1 recall follow-up">
+          <Tooltip content="Unread notifications for your clinic">
             <KPICard
-              label="Pending Tasks"
-              value={3}
+              label="Unread Notifications"
+              value={kpis?.unreadNotifications ?? '—'}
               icon={<Clock size={20} />}
               accentColor="var(--amber)"
             />
           </Tooltip>
         </div>
         <div className="kpi-animate" style={{ animationDelay: '120ms' }}>
+          {/* TODO: Wire to real API when success rate endpoint is available */}
           <Tooltip content="Percentage of your jobs today that completed successfully">
             <KPICard
               label="Success Rate"
-              value="100%"
+              value="—"
               icon={<TrendingUp size={20} />}
               accentColor="var(--green)"
             />

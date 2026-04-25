@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import type { ITAdminKPIs } from '@/types/api';
 import {
   Building2,
   BriefcaseBusiness,
@@ -132,6 +134,14 @@ const agentVersions = [
 const emptyAddClinicForm = { clinicName: '', address: '', city: '', state: '', zip: '', phone: '', npi: '' };
 
 export function ITAdminDashboard() {
+  const [kpis, setKpis] = useState<ITAdminKPIs | null>(null);
+
+  useEffect(() => {
+    api.get<{ data: ITAdminKPIs }>('/api/dashboard/kpis')
+      .then(res => setKpis(res.data))
+      .catch(() => {});
+  }, []);
+
   const [selectedClinic, setSelectedClinic] = useState<typeof clinics[0] | null>(null);
   const [showAddClinic, setShowAddClinic] = useState(false);
   const [showPushUpdate, setShowPushUpdate] = useState(false);
@@ -170,7 +180,7 @@ export function ITAdminDashboard() {
         <div style={{ animationDelay: '0ms' }} className="kpi-animate">
           <KPICard
             label="Total Clinics"
-            value={3}
+            value={kpis?.totalClinics ?? '—'}
             icon={<Building2 size={20} />}
             accentColor="var(--accent)"
           />
@@ -178,27 +188,25 @@ export function ITAdminDashboard() {
         <div style={{ animationDelay: '60ms' }} className="kpi-animate">
           <KPICard
             label="Jobs Today"
-            value={73}
+            value={kpis?.jobsToday ?? '—'}
             icon={<BriefcaseBusiness size={20} />}
             accentColor="var(--purple)"
           />
         </div>
         <div style={{ animationDelay: '120ms' }} className="kpi-animate">
           <KPICard
-            label="Success Rate"
-            value="97.2%"
+            label="Total Patients"
+            value={kpis?.totalPatients ?? '—'}
             icon={<TrendingUp size={20} />}
             accentColor="var(--green)"
-            delta="+0.5% vs yesterday"
-            deltaType="positive"
           />
         </div>
         <div style={{ animationDelay: '180ms' }} className="kpi-animate">
           <KPICard
-            label="Active Agents"
-            value="2 / 3"
+            label="Failed Jobs Today"
+            value={kpis?.failedJobsToday ?? '—'}
             icon={<Bot size={20} />}
-            accentColor="var(--amber)"
+            accentColor={kpis && kpis.failedJobsToday > 0 ? 'var(--red)' : 'var(--green)'}
           />
         </div>
       </div>

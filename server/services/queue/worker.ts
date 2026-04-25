@@ -2,6 +2,9 @@ import type { Job } from '../../db/schema';
 import type { ExecutionLogEntry, JobType } from './types';
 import { getNextJob, updateJobStatus, appendToExecutionLog } from './manager';
 import { syncPatients, syncInsurance, fullSync } from '../sync/engine';
+import { runBatchVerification } from '../eligibility/batch';
+import { runDayOfServiceRecheck } from '../eligibility/recheck';
+import { verifyPatientEligibility } from '../eligibility/engine';
 
 type JobHandler = (job: Job) => Promise<void>;
 
@@ -43,25 +46,54 @@ const jobHandlers: Partial<Record<JobType, JobHandler>> = {
     });
   },
 
-  // Phase 2 stubs
   eligibility_batch: async (job) => {
+    // Batch creates its own sub-job internally for detailed tracking;
+    // this handler just orchestrates and reports the top-level result
+    const result = await runBatchVerification(job.clinicId, job.triggeredBy ?? undefined);
     await updateJobStatus(job.id, 'completed', {
       completedAt: new Date(),
-      result: { message: 'Eligibility batch not yet implemented — Phase 2' },
+      processedItems: result.total,
+      failedItems: result.failed,
+      result,
     });
   },
 
   eligibility_single: async (job) => {
+    // relatedEntityId may contain the insurance ID; extract patient/insurance from job result metadata
+    const metadata = (job.result ?? {}) as Record<string, string>;
+    const patientId = metadata.patientId ?? job.relatedEntityId ?? '';
+    const insuranceId = metadata.insuranceId ?? '';
+
+    if (!patientId || !insuranceId) {
+      await updateJobStatus(job.id, 'completed', {
+        completedAt: new Date(),
+        result: { message: 'Missing patientId or insuranceId in job metadata' },
+      });
+      return;
+    }
+
+    const check = await verifyPatientEligibility({
+      patientId,
+      insuranceId,
+      clinicId: job.clinicId,
+      trigger: 'webhook',
+      triggeredBy: job.triggeredBy,
+    });
+
     await updateJobStatus(job.id, 'completed', {
       completedAt: new Date(),
-      result: { message: 'Eligibility single not yet implemented — Phase 2' },
+      processedItems: 1,
+      result: { eligibilityResult: check.eligibilityResult, status: check.status },
     });
   },
 
   eligibility_recheck: async (job) => {
+    const result = await runDayOfServiceRecheck(job.clinicId);
     await updateJobStatus(job.id, 'completed', {
       completedAt: new Date(),
-      result: { message: 'Eligibility recheck not yet implemented — Phase 2' },
+      processedItems: result.total,
+      failedItems: result.failed,
+      result,
     });
   },
 
@@ -88,9 +120,16 @@ const jobHandlers: Partial<Record<JobType, JobHandler>> = {
   },
 
   webhook_process: async (job) => {
+    // Webhook jobs are created by the webhook endpoint; the event data is stored
+    // in relatedEntityType/relatedEntityId. For eligibility-related events,
+    // we'd look up the patient/insurance and trigger verification.
+    // For now, log the event as processed — the webhook route already created
+    // the appropriate eligibility_single job if needed.
     await updateJobStatus(job.id, 'completed', {
       completedAt: new Date(),
-      result: { message: 'Webhook processing not yet implemented — Phase 2' },
+      result: {
+        message: `Webhook event processed: ${job.relatedEntityType}`,
+      },
     });
   },
 };

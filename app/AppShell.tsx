@@ -1,25 +1,58 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RoleProvider } from '@/context/RoleContext';
+import { useAuth } from '@/context/AuthContext';
+import { api } from '@/lib/api';
 import { TopNav } from '@/components/layout/TopNav';
 import { Sidebar } from '@/components/layout/Sidebar';
-import type { Notification } from '@/types';
+import type { PaginatedResponse, ApiNotification } from '@/types/api';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    import('@/data/mock/notifications.json')
-      .then(mod => {
-        const notifs = mod.default as Notification[];
-        setUnreadCount(notifs.filter(n => !n.read && !n.dismissed).length);
-      })
-      .catch(() => setUnreadCount(3));
-  }, []);
+    if (!isAuthenticated) return;
+
+    api.get<PaginatedResponse<ApiNotification>>('/api/notifications?is_read=false&limit=1')
+      .then(res => setUnreadCount(res.total))
+      .catch(() => setUnreadCount(0));
+  }, [isAuthenticated]);
+
+  if (isLoading) {
+    return (
+      <div className="loading-gate">
+        <div className="loading-spinner" />
+        <style jsx>{`
+          .loading-gate {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: var(--bg-deepest);
+          }
+          .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
-    <RoleProvider>
+    <>
       <TopNav unreadCount={unreadCount} />
       <div className="app-body">
         <Sidebar />
@@ -52,6 +85,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           }
         }
       `}</style>
-    </RoleProvider>
+    </>
   );
 }

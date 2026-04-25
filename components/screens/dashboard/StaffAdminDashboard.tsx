@@ -1,5 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import type { StaffAdminKPIs } from '@/types/api';
 import {
   DollarSign,
   Wallet,
@@ -104,6 +107,14 @@ const claimChartOptions = {
 };
 
 export function StaffAdminDashboard() {
+  const [kpis, setKpis] = useState<StaffAdminKPIs | null>(null);
+
+  useEffect(() => {
+    api.get<{ data: StaffAdminKPIs }>('/api/dashboard/kpis')
+      .then(res => setKpis(res.data))
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="staff-admin-dashboard">
       <div className="section-title">Bright Smiles Dental</div>
@@ -111,26 +122,24 @@ export function StaffAdminDashboard() {
       <div className="kpi-grid">
         <div className="kpi-animate" style={{ animationDelay: '0ms' }}>
           <KPICard
-            label="Today's Production"
-            value={formatCurrency(12450)}
+            label="Active Patients"
+            value={kpis?.patientCount ?? '—'}
             icon={<DollarSign size={20} />}
             accentColor="var(--green)"
           />
         </div>
         <div className="kpi-animate" style={{ animationDelay: '60ms' }}>
           <KPICard
-            label="MTD Collections"
-            value={formatCurrency(87320)}
+            label="Jobs Today"
+            value={kpis?.jobsToday ?? '—'}
             icon={<Wallet size={20} />}
             accentColor="var(--accent)"
-            delta="+12.3% vs last month"
-            deltaType="positive"
           />
         </div>
         <div className="kpi-animate" style={{ animationDelay: '120ms' }}>
           <KPICard
-            label="Overdue Recalls"
-            value={23}
+            label="Unread Notifications"
+            value={kpis?.unreadNotifications ?? '—'}
             icon={<BellRing size={20} />}
             accentColor="var(--amber)"
           />
@@ -138,7 +147,7 @@ export function StaffAdminDashboard() {
         <div className="kpi-animate" style={{ animationDelay: '180ms' }}>
           <KPICard
             label="Unverified Insurance"
-            value={8}
+            value={kpis?.unverifiedInsurance ?? '—'}
             icon={<ShieldCheck size={20} />}
             accentColor="var(--red)"
           />

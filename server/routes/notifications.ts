@@ -19,6 +19,7 @@ export const listNotifications = withErrorHandler(
       const conditions = [];
       if (clinicId) conditions.push(eq(notifications.clinicId, clinicId));
       if (params.severity) conditions.push(eq(notifications.severity, params.severity));
+      if (params.type) conditions.push(eq(notifications.type, params.type));
       if (params.isRead !== undefined) conditions.push(eq(notifications.isRead, params.isRead));
 
       // Filter by role visibility

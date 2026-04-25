@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { DM_Sans, Space_Mono } from 'next/font/google';
 import './globals.css';
-import { AppShell } from './AppShell';
+import { AuthProvider } from '@/context/AuthContext';
 
 const dmSans = DM_Sans({
   variable: '--font-dm-sans',
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${dmSans.variable} ${spaceMono.variable}`}>
       <body>
-        <AppShell>{children}</AppShell>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

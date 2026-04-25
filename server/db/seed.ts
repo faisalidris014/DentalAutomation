@@ -89,14 +89,14 @@ async function main() {
 
   // ─── Insurance Records ──────────────────────────────────
   const insuranceData = [
-    { patientIdx: 0, carrierName: 'Delta Dental', subscriberId: 'DD-88031501', groupNumber: 'GRP-4521', planType: 'ppo' },
-    { patientIdx: 1, carrierName: 'MetLife', subscriberId: 'ML-75092201', groupNumber: 'GRP-7832', planType: 'ppo' },
-    { patientIdx: 2, carrierName: 'Cigna', subscriberId: 'CG-92070401', groupNumber: 'GRP-1156', planType: 'ppo' },
+    { patientIdx: 0, carrierName: 'Delta Dental', subscriberId: 'DD-88031502', groupNumber: 'GRP-4521', planType: 'ppo' },
+    { patientIdx: 1, carrierName: 'MetLife', subscriberId: 'ML-75092203', groupNumber: 'GRP-7832', planType: 'ppo' },
+    { patientIdx: 2, carrierName: 'Cigna', subscriberId: 'CG-92070404', groupNumber: 'GRP-1156', planType: 'ppo' },
     { patientIdx: 3, carrierName: 'Delta Dental', subscriberId: 'DD-65120101', groupNumber: 'GRP-4521', planType: 'ppo' },
-    { patientIdx: 4, carrierName: 'MetLife', subscriberId: 'ML-98051801', groupNumber: 'GRP-3290', planType: 'hmo' },
-    { patientIdx: 5, carrierName: 'Cigna', subscriberId: 'CG-82113001', groupNumber: 'GRP-1156', planType: 'ppo' },
+    { patientIdx: 4, carrierName: 'MetLife', subscriberId: 'ML-98051805', groupNumber: 'GRP-3290', planType: 'hmo' },
+    { patientIdx: 5, carrierName: 'Cigna', subscriberId: 'CG-82113006', groupNumber: 'GRP-1156', planType: 'ppo' },
     { patientIdx: 6, carrierName: 'Delta Dental', subscriberId: 'DD-70021401', groupNumber: 'GRP-8901', planType: 'ppo' },
-    { patientIdx: 7, carrierName: 'MetLife', subscriberId: 'ML-55082501', groupNumber: 'GRP-7832', planType: 'ppo' },
+    { patientIdx: 7, carrierName: 'MetLife', subscriberId: 'ML-55082507', groupNumber: 'GRP-7832', planType: 'ppo' },
   ];
 
   const insuranceRecords = await db.insert(schema.insuranceCache).values(

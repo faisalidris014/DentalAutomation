@@ -118,6 +118,12 @@ export const eobReviewSchema = z.object({
   reviewNotes: z.string().optional(),
 });
 
+export const verifyEligibilitySchema = z.object({
+  patientId: z.string().uuid(),
+  insuranceId: z.string().uuid(),
+  clinicId: z.string().uuid().optional(), // only for it_admin override
+});
+
 export function parseQueryParams(url: URL) {
   return {
     clinicId: url.searchParams.get('clinic_id') ?? undefined,
@@ -135,5 +141,6 @@ export function parseQueryParams(url: URL) {
     payerName: url.searchParams.get('payer') ?? undefined,
     triageStatus: url.searchParams.get('triage_status') ?? undefined,
     patientId: url.searchParams.get('patient_id') ?? undefined,
+    type: url.searchParams.get('type') ?? undefined,
   };
 }
