@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import type { StaffAdminKPIs } from '@/types/api';
+import { mapApiNotificationToNotification } from '@/lib/adapters';
+import type { StaffAdminKPIs, ApiNotification, ApiClaim } from '@/types/api';
 import {
   DollarSign,
   Wallet,
@@ -27,17 +28,6 @@ import { formatCurrency, formatTime, formatRelativeTime } from '@/lib/formatters
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const appointments = [
-  { time: '08:00', patient: 'Maria Santos', procedure: 'D0120 - Periodic Oral Eval', provider: 'Dr. Mitchell', status: 'confirmed' },
-  { time: '08:30', patient: 'James Wilson', procedure: 'D1110 - Prophylaxis Adult', provider: 'Sarah H.', status: 'confirmed' },
-  { time: '09:00', patient: 'Robert Chen', procedure: 'D2391 - Post Composite 1 Surf', provider: 'Dr. Mitchell', status: 'in_progress' },
-  { time: '09:30', patient: 'Emily Rodriguez', procedure: 'D2740 - Crown Porcelain', provider: 'Dr. Mitchell', status: 'scheduled' },
-  { time: '10:00', patient: 'David Thompson', procedure: 'D0274 - Bitewings 4 Films', provider: 'Sarah H.', status: 'scheduled' },
-  { time: '10:30', patient: 'Lisa Nakamura', procedure: 'D4341 - Perio Scaling 4+ Teeth', provider: 'Dr. Mitchell', status: 'scheduled' },
-  { time: '11:00', patient: 'Michael Brown', procedure: 'D0220 - Periapical First Film', provider: 'Sarah H.', status: 'scheduled' },
-  { time: '14:00', patient: 'Sarah Kim', procedure: 'D1110 - Prophylaxis Adult', provider: 'Sarah H.', status: 'scheduled' },
-];
-
 const statusBadgeMap: Record<string, { variant: 'green' | 'cyan' | 'amber' | 'default'; label: string }> = {
   confirmed: { variant: 'green', label: 'Confirmed' },
   in_progress: { variant: 'cyan', label: 'In Progress' },
@@ -47,36 +37,18 @@ const statusBadgeMap: Record<string, { variant: 'green' | 'cyan' | 'amber' | 'de
   no_show: { variant: 'red' as 'green', label: 'No Show' },
 };
 
-const activityFeed = [
-  { icon: <ShieldCheck size={16} />, message: 'Eligibility verified for Maria Santos', time: new Date(Date.now() - 60000 * 5).toISOString(), color: 'var(--green)' },
-  { icon: <FileCheck size={16} />, message: 'Claim CLM-4521 approved by Delta Dental', time: new Date(Date.now() - 60000 * 18).toISOString(), color: 'var(--green)' },
-  { icon: <Send size={16} />, message: 'Recall reminder sent to James Wilson', time: new Date(Date.now() - 60000 * 35).toISOString(), color: 'var(--accent)' },
-  { icon: <CreditCard size={16} />, message: 'ERA posted: $1,240 from Aetna', time: new Date(Date.now() - 60000 * 52).toISOString(), color: 'var(--purple)' },
-  { icon: <UserCheck size={16} />, message: 'Patient Robert Chen checked in', time: new Date(Date.now() - 60000 * 68).toISOString(), color: 'var(--accent)' },
-  { icon: <AlertCircle size={16} />, message: 'Insurance lapsed: David Thompson (MetLife)', time: new Date(Date.now() - 3600000 * 1.5).toISOString(), color: 'var(--amber)' },
-  { icon: <PhoneCall size={16} />, message: 'Confirmation call completed: Emily Rodriguez', time: new Date(Date.now() - 3600000 * 2).toISOString(), color: 'var(--green)' },
-  { icon: <Calendar size={16} />, message: 'Appointment rescheduled: Lisa Nakamura to 10:30 AM', time: new Date(Date.now() - 3600000 * 3).toISOString(), color: 'var(--amber)' },
-];
+const severityIcons: Record<string, React.ReactNode> = {
+  success: <CheckCircle2 size={16} />,
+  info: <ShieldCheck size={16} />,
+  warning: <AlertCircle size={16} />,
+  error: <AlertCircle size={16} />,
+};
 
-const claimChartData = {
-  labels: ['Paid', 'Processing', 'Denied'],
-  datasets: [
-    {
-      data: [12, 4, 2],
-      backgroundColor: [
-        'rgba(52, 211, 153, 0.8)',
-        'rgba(34, 211, 238, 0.8)',
-        'rgba(248, 113, 113, 0.8)',
-      ],
-      borderColor: [
-        'rgba(52, 211, 153, 1)',
-        'rgba(34, 211, 238, 1)',
-        'rgba(248, 113, 113, 1)',
-      ],
-      borderWidth: 1,
-      hoverOffset: 6,
-    },
-  ],
+const severityColors: Record<string, string> = {
+  success: 'var(--green)',
+  info: 'var(--accent)',
+  warning: 'var(--amber)',
+  error: 'var(--red)',
 };
 
 const claimChartOptions = {
@@ -108,10 +80,61 @@ const claimChartOptions = {
 
 export function StaffAdminDashboard() {
   const [kpis, setKpis] = useState<StaffAdminKPIs | null>(null);
+  const [appointments, setAppointments] = useState<{ time: string; patient: string; procedure: string; provider: string; status: string }[]>([]);
+  const [activityFeed, setActivityFeed] = useState<{ icon: React.ReactNode; message: string; time: string; color: string }[]>([]);
+  const [claimChartData, setClaimChartData] = useState({
+    labels: ['Paid', 'Processing', 'Denied'],
+    datasets: [{
+      data: [0, 0, 0],
+      backgroundColor: ['rgba(52, 211, 153, 0.8)', 'rgba(34, 211, 238, 0.8)', 'rgba(248, 113, 113, 0.8)'],
+      borderColor: ['rgba(52, 211, 153, 1)', 'rgba(34, 211, 238, 1)', 'rgba(248, 113, 113, 1)'],
+      borderWidth: 1,
+      hoverOffset: 6,
+    }],
+  });
 
   useEffect(() => {
     api.get<{ data: StaffAdminKPIs }>('/api/dashboard/kpis')
       .then(res => setKpis(res.data))
+      .catch(() => {});
+
+    // Fetch today's appointments
+    const today = new Date().toISOString().split('T')[0];
+    api.get<{ data: { time?: string; patientName?: string; procedureCode?: string; procedureDescription?: string; provider?: string; status?: string }[] }>(`/api/appointments?date_from=${today}&date_to=${today}`)
+      .then(res => {
+        setAppointments((res.data || []).map(a => ({
+          time: a.time ?? '',
+          patient: a.patientName ?? '',
+          procedure: `${a.procedureCode ?? ''} - ${a.procedureDescription ?? ''}`,
+          provider: a.provider ?? '',
+          status: a.status ?? 'scheduled',
+        })));
+      })
+      .catch(() => {});
+
+    // Fetch recent notifications as activity feed
+    api.get<{ data: ApiNotification[]; total: number }>('/api/notifications?limit=8')
+      .then(res => {
+        setActivityFeed(res.data.map(n => ({
+          icon: severityIcons[n.severity] ?? <ShieldCheck size={16} />,
+          message: `${n.title}: ${n.message}`.slice(0, 80),
+          time: n.createdAt,
+          color: severityColors[n.severity] ?? 'var(--accent)',
+        })));
+      })
+      .catch(() => {});
+
+    // Fetch claim stats for chart
+    api.get<{ data: ApiClaim[]; total: number }>('/api/claims?limit=100')
+      .then(res => {
+        const paid = res.data.filter(c => c.status === 'paid' || c.status === 'approved').length;
+        const processing = res.data.filter(c => c.status === 'submitted' || c.status === 'processing').length;
+        const denied = res.data.filter(c => c.status === 'denied').length;
+        setClaimChartData(prev => ({
+          ...prev,
+          datasets: [{ ...prev.datasets[0], data: [paid, processing, denied] }],
+        }));
+      })
       .catch(() => {});
   }, []);
 

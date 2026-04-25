@@ -205,17 +205,168 @@ export interface ApiNotification {
   createdAt: string;
 }
 
-// ─── Claims (minimal, for patient detail) ──────────────────────────────────
+// ─── Claims ───────────────────────────────────────────────────────────────
 
 export interface ApiClaim {
   id: string;
-  patientId: string;
+  patientId: string | null;
   clinicId: string;
+  pmsClaimId: string | null;
   payerName: string | null;
-  status: string;
-  totalFee: string | number;
-  paidAmount: string | number | null;
-  dateOfService: string | null;
+  claimType: string | null;
+  status: string | null;
+  amountBilled: string | number | null;
+  amountPaid: string | number | null;
   dateSubmitted: string | null;
+  dateReceived: string | null;
+  denialCode: string | null;
+  denialReason: string | null;
+  procedures: unknown;
+  lastSyncedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  // Joined
+  patientName?: string | null;
+}
+
+// ─── EOB ──────────────────────────────────────────────────────────────────
+
+export interface ApiEob {
+  id: string;
+  clinicId: string;
+  patientId: string | null;
+  payerName: string;
+  checkNumber: string | null;
+  checkDate: string | null;
+  checkAmount: string | number | null;
+  receivedDate: string | null;
+  lineItems: unknown;
+  totalCharged: string | number | null;
+  totalPaid: string | number | null;
+  totalAdjusted: string | number | null;
+  totalPatientResp: string | number | null;
+  triageStatus: string;
+  triageReason: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewNotes: string | null;
+  postedToPms: boolean;
+  source: string | null;
+  createdAt: string;
+  updatedAt: string;
+  // Joined
+  patientName?: string | null;
+}
+
+// ─── Recall ───────────────────────────────────────────────────────────────
+
+export interface ApiRecall {
+  id: string;
+  patientId: string;
+  patientName: string;
+  clinicId: string;
+  recallType: string;
+  dueDate: string;
+  daysOverdue: number;
+  reminderCount: number;
+  contactMethod: string;
+  status: string;
+  phone: string;
+  email: string;
+}
+
+// ─── Agent ────────────────────────────────────────────────────────────────
+
+export interface ApiAgent {
+  id: string;
+  clinicId: string;
+  clinicName: string;
+  status: 'online' | 'offline' | 'updating';
+  version: string;
+  latestVersion: string;
+  lastHeartbeat: string;
+  jobsInQueue: number;
+  jobsCompletedToday: number;
+  openDentalConnected: boolean;
+  uptime: string;
+  logs: { timestamp: string; level: string; message: string }[];
+}
+
+// ─── Job ──────────────────────────────────────────────────────────────────
+
+export interface ApiJob {
+  id: string;
+  clinicId: string;
+  jobType: string;
+  status: string;
+  priority: number | null;
+  triggeredBy: string | null;
+  triggerSource: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  durationMs: number | null;
+  totalItems: number | null;
+  processedItems: number | null;
+  failedItems: number | null;
+  result: unknown;
+  errorMessage: string | null;
+  executionLog: unknown;
+  retryCount: number | null;
+  maxRetries: number | null;
+  relatedEntityType: string | null;
+  relatedEntityId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Appointment (from PMS adapter) ───────────────────────────────────────
+
+export interface ApiAppointment {
+  pmsId: string;
+  patientPmsId: string;
+  patientName?: string;
+  date: string;
+  time: string;
+  duration: number;
+  procedureCode: string;
+  procedureDescription: string;
+  provider: string;
+  status: string;
+  fee: number;
+}
+
+// ─── Payer Config ─────────────────────────────────────────────────────────
+
+export interface ApiPayerConfig {
+  id: string;
+  clinicId: string;
+  payerName: string;
+  payerType: string;
+  state: string | null;
+  adapterKey: string;
+  portalUrl: string | null;
+  isEnabled: boolean | null;
+  autoVerify: boolean | null;
+  timeoutMs: number | null;
+  maxRetries: number | null;
+  featuresEnabled: unknown;
+  lastHealthCheck: string | null;
+  healthStatus: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Audit Log ────────────────────────────────────────────────────────────
+
+export interface ApiAuditEntry {
+  id: string;
+  userId: string | null;
+  clinicId: string | null;
+  action: string;
+  entityType: string | null;
+  entityId: string | null;
+  details: unknown;
+  ipAddress: string | null;
+  userAgent: string | null;
   createdAt: string;
 }

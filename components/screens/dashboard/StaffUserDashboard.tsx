@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import type { StaffUserKPIs } from '@/types/api';
+import type { StaffUserKPIs, ApiJob } from '@/types/api';
 import {
   ClipboardList,
   Clock,
@@ -22,42 +22,73 @@ import { Badge } from '@/components/ui/Badge';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { formatCurrency, formatTime } from '@/lib/formatters';
 
-const appointments = [
-  { time: '08:00', patient: 'Maria Santos', procedure: 'D0120 - Periodic Oral Eval', provider: 'Dr. Mitchell', status: 'confirmed' },
-  { time: '08:30', patient: 'James Wilson', procedure: 'D1110 - Prophylaxis Adult', provider: 'Sarah H.', status: 'confirmed' },
-  { time: '09:00', patient: 'Robert Chen', procedure: 'D2391 - Post Composite 1 Surf', provider: 'Dr. Mitchell', status: 'in_progress' },
-  { time: '10:00', patient: 'David Thompson', procedure: 'D0274 - Bitewings 4 Films', provider: 'Sarah H.', status: 'scheduled' },
-  { time: '14:00', patient: 'Sarah Kim', procedure: 'D1110 - Prophylaxis Adult', provider: 'Sarah H.', status: 'scheduled' },
-];
-
 const statusBadgeMap: Record<string, { variant: 'green' | 'cyan' | 'amber' | 'default'; label: string }> = {
   confirmed: { variant: 'green', label: 'Confirmed' },
   in_progress: { variant: 'cyan', label: 'In Progress' },
   scheduled: { variant: 'default', label: 'Scheduled' },
 };
 
-const recentJobs = [
-  { id: 1, type: 'Eligibility Check', patient: 'Maria Santos', status: 'completed', icon: <CheckCircle2 size={16} /> },
-  { id: 2, type: 'Claim Submission', patient: 'CLM-4528', status: 'processing', icon: <Loader2 size={16} /> },
-  { id: 3, type: 'Eligibility Check', patient: 'James Wilson', status: 'completed', icon: <CheckCircle2 size={16} /> },
-  { id: 4, type: 'Recall Reminder', patient: 'David Thompson', status: 'completed', icon: <Send size={16} /> },
-  { id: 5, type: 'EOB Retrieval', patient: 'ERA-1192', status: 'failed', icon: <AlertCircle size={16} /> },
-];
+const jobTypeLabels: Record<string, string> = {
+  eligibility: 'Eligibility Check',
+  eob_retrieval: 'EOB Retrieval',
+  claim_submit: 'Claim Submission',
+  claim_status: 'Claim Status',
+  recall_reminder: 'Recall Reminder',
+  patient_sync: 'Patient Sync',
+};
 
 const jobStatusMap: Record<string, { variant: 'green' | 'cyan' | 'red' | 'amber'; label: string }> = {
   completed: { variant: 'green', label: 'Completed' },
+  running: { variant: 'cyan', label: 'Processing' },
   processing: { variant: 'cyan', label: 'Processing' },
   failed: { variant: 'red', label: 'Failed' },
+  queued: { variant: 'amber', label: 'Pending' },
   pending: { variant: 'amber', label: 'Pending' },
+};
+
+const jobStatusIcons: Record<string, React.ReactNode> = {
+  completed: <CheckCircle2 size={16} />,
+  running: <Loader2 size={16} />,
+  failed: <AlertCircle size={16} />,
+  queued: <Clock size={16} />,
 };
 
 export function StaffUserDashboard() {
   const router = useRouter();
   const [kpis, setKpis] = useState<StaffUserKPIs | null>(null);
+  const [appointments, setAppointments] = useState<{ time: string; patient: string; procedure: string; provider: string; status: string }[]>([]);
+  const [recentJobs, setRecentJobs] = useState<{ id: number | string; type: string; patient: string; status: string; icon: React.ReactNode }[]>([]);
 
   useEffect(() => {
     api.get<{ data: StaffUserKPIs }>('/api/dashboard/kpis')
       .then(res => setKpis(res.data))
+      .catch(() => {});
+
+    // Fetch today's appointments
+    const today = new Date().toISOString().split('T')[0];
+    api.get<{ data: { time?: string; patientName?: string; procedureCode?: string; procedureDescription?: string; provider?: string; status?: string }[] }>(`/api/appointments?date_from=${today}&date_to=${today}`)
+      .then(res => {
+        setAppointments((res.data || []).map(a => ({
+          time: a.time ?? '',
+          patient: a.patientName ?? '',
+          procedure: `${a.procedureCode ?? ''} - ${a.procedureDescription ?? ''}`,
+          provider: a.provider ?? '',
+          status: a.status ?? 'scheduled',
+        })));
+      })
+      .catch(() => {});
+
+    // Fetch recent jobs
+    api.get<{ data: ApiJob[]; total: number }>('/api/jobs?limit=5')
+      .then(res => {
+        setRecentJobs(res.data.map(j => ({
+          id: j.id,
+          type: jobTypeLabels[j.jobType] ?? j.jobType,
+          patient: j.relatedEntityId ?? j.id.slice(0, 8),
+          status: j.status === 'queued' ? 'pending' : j.status === 'running' ? 'processing' : j.status,
+          icon: jobStatusIcons[j.status] ?? <CheckCircle2 size={16} />,
+        })));
+      })
       .catch(() => {});
   }, []);
 

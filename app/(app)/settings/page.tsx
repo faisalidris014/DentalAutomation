@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Settings, Building2, Shield, Users, Bell, Key, ToggleLeft, ToggleRight, FileText, Eye, EyeOff } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -9,36 +9,10 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Toast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { useRole } from '@/context/RoleContext';
-
-const payers = [
-  { name: 'Delta Dental', status: 'active', features: ['Eligibility', 'Claims', 'EOB'] },
-  { name: 'Cigna', status: 'active', features: ['Eligibility', 'Claims', 'EOB'] },
-  { name: 'MetLife', status: 'active', features: ['Eligibility', 'Claims'] },
-  { name: 'Aetna', status: 'coming_soon', features: [] },
-  { name: 'Guardian', status: 'coming_soon', features: [] },
-];
-
-const staffUsers = [
-  { name: 'Dr. Sarah Mitchell', email: 'sarah@brightsmiles.com', role: 'Staff Admin', initials: 'SM' },
-  { name: 'Jessica Torres', email: 'jessica@brightsmiles.com', role: 'Staff User', initials: 'JT' },
-  { name: 'Michael Rivera', email: 'michael@brightsmiles.com', role: 'Staff User', initials: 'MR' },
-  { name: 'Ashley Johnson', email: 'ashley@brightsmiles.com', role: 'Staff User', initials: 'AJ' },
-];
-
-const auditLog = [
-  { time: '2026-04-07 14:30', user: 'Jessica Torres', action: 'Ran eligibility check', target: 'Maria Santos' },
-  { time: '2026-04-07 14:15', user: 'Dr. Sarah Mitchell', action: 'Submitted claim', target: 'CLM-7823' },
-  { time: '2026-04-07 13:45', user: 'System', action: 'EOB sync completed', target: 'Delta Dental' },
-  { time: '2026-04-07 12:30', user: 'Jessica Torres', action: 'Sent recall reminders', target: '5 patients' },
-  { time: '2026-04-07 10:00', user: 'System', action: 'Patient sync completed', target: '142 records' },
-  { time: '2026-04-06 17:00', user: 'Dr. Sarah Mitchell', action: 'Updated payer credentials', target: 'Cigna' },
-];
-
-const managedClinics = [
-  { name: 'Bright Smiles Dental', address: '1234 Oak Valley Dr, Suite 200, Austin, TX 78704', phone: '(512) 456-7890', npi: '1234567890', agentAutoUpdate: true, maxConcurrentJobs: 5, apiTimeout: 30000 },
-  { name: 'Lakewood Family Dentistry', address: '567 Lakewood Blvd, Dallas, TX 75214', phone: '(214) 555-1234', npi: '9876543210', agentAutoUpdate: true, maxConcurrentJobs: 3, apiTimeout: 25000 },
-  { name: 'North Star Dental Group', address: '890 North Star Way, Houston, TX 77001', phone: '(713) 555-9876', npi: '5678901234', agentAutoUpdate: false, maxConcurrentJobs: 4, apiTimeout: 30000 },
-];
+import { api } from '@/lib/api';
+import { mapApiUserToUser, mapApiClinicToClinic } from '@/lib/adapters';
+import { getInitials } from '@/lib/formatters';
+import type { ApiUser, ApiClinic, ApiPayerConfig, ApiAuditEntry } from '@/types/api';
 
 interface ClinicProfileData {
   clinicName: string;
@@ -97,9 +71,72 @@ const initialNotificationPrefs = [
 ];
 
 export default function SettingsPage() {
-  const { role } = useRole();
+  const { role, currentClinic } = useRole();
   const [activeTab, setActiveTab] = useState(role === 'it_admin' ? 'clinics' : 'profile');
   const [showCredentials, setShowCredentials] = useState<Record<string, boolean>>({});
+
+  // Dynamic data from API
+  const [payers, setPayers] = useState<{ name: string; status: string; features: string[] }[]>([]);
+  const [staffUsers, setStaffUsers] = useState<{ name: string; email: string; role: string; initials: string }[]>([]);
+  const [auditLog, setAuditLog] = useState<{ time: string; user: string; action: string; target: string }[]>([]);
+  const [managedClinics, setManagedClinics] = useState<{ name: string; address: string; phone: string; npi: string; agentAutoUpdate: boolean; maxConcurrentJobs: number; apiTimeout: number }[]>([]);
+
+  useEffect(() => {
+    // Load payer configs
+    api.get<{ data: ApiPayerConfig[] }>(`/api/settings/payer-configs?clinic_id=${currentClinic.id}`)
+      .then(res => {
+        setPayers(res.data.map(p => ({
+          name: p.payerName,
+          status: p.isEnabled ? 'active' : 'coming_soon',
+          features: Array.isArray(p.featuresEnabled) ? p.featuresEnabled as string[] : ['Eligibility'],
+        })));
+      })
+      .catch(() => {});
+
+    // Load users
+    api.get<{ data: ApiUser[] }>('/api/users')
+      .then(res => {
+        setStaffUsers(res.data.map(u => ({
+          name: `${u.firstName} ${u.lastName}`,
+          email: u.email,
+          role: u.role === 'staff_admin' ? 'Staff Admin' : u.role === 'it_admin' ? 'IT Admin' : 'Staff User',
+          initials: getInitials(`${u.firstName} ${u.lastName}`),
+        })));
+      })
+      .catch(() => {});
+
+    // Load clinics
+    api.get<{ data: ApiClinic[] }>('/api/clinics')
+      .then(res => {
+        setManagedClinics(res.data.map(c => {
+          const mapped = mapApiClinicToClinic(c);
+          return {
+            name: mapped.name,
+            address: mapped.address,
+            phone: mapped.phone,
+            npi: mapped.npi,
+            agentAutoUpdate: true,
+            maxConcurrentJobs: 5,
+            apiTimeout: 30000,
+          };
+        }));
+      })
+      .catch(() => {});
+
+    // Load audit log (recent notifications as proxy)
+    api.get<{ data: { id: string; action: string; entityType: string | null; entityId: string | null; createdAt: string; userId: string | null }[] }>(`/api/settings?category=audit`)
+      .then(res => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setAuditLog(res.data.slice(0, 10).map(e => ({
+            time: new Date(e.createdAt).toLocaleString(),
+            user: 'System',
+            action: String((e as Record<string, unknown>).key ?? e.action ?? ''),
+            target: String((e as Record<string, unknown>).value ?? e.entityId ?? ''),
+          })));
+        }
+      })
+      .catch(() => {});
+  }, [currentClinic.id]);
 
   // Toast state
   const [toast, setToast] = useState({ visible: false, message: '', variant: 'success' as 'success' | 'error' });

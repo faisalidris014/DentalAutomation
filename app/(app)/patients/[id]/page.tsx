@@ -14,66 +14,12 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Timeline } from '@/components/ui/Timeline';
 import { useRole } from '@/context/RoleContext';
 import { api } from '@/lib/api';
-import { mapApiPatientToPatient, mapApiInsuranceToInfo } from '@/lib/adapters';
+import { mapApiPatientToPatient, mapApiInsuranceToInfo, mapApiClaimToClaim, mapApiNotificationToNotification } from '@/lib/adapters';
 import { formatCurrency, formatDate, formatPhone, getInitials } from '@/lib/formatters';
 import type { Patient, InsuranceInfo } from '@/types';
-import type { SingleResponse, ApiPatient, ApiInsurance } from '@/types/api';
+import type { SingleResponse, PaginatedResponse, ApiPatient, ApiInsurance, ApiClaim, ApiNotification } from '@/types/api';
 
 type Tab = 'insurance' | 'appointments' | 'claims' | 'communications';
-
-const mockAppointments = [
-  { id: 'a1', date: '2026-03-12', procedure: 'D0120 - Periodic Oral Exam', provider: 'Dr. Sarah Mitchell', fee: 65, status: 'completed' },
-  { id: 'a2', date: '2026-03-12', procedure: 'D1110 - Adult Prophylaxis', provider: 'Lisa Chen, RDH', fee: 115, status: 'completed' },
-  { id: 'a3', date: '2025-10-15', procedure: 'D2392 - Resin Composite (2s, posterior)', provider: 'Dr. Sarah Mitchell', fee: 245, status: 'completed' },
-  { id: 'a4', date: '2025-10-15', procedure: 'D0274 - Bitewings (4 images)', provider: 'Lisa Chen, RDH', fee: 72, status: 'completed' },
-  { id: 'a5', date: '2025-04-08', procedure: 'D0120 - Periodic Oral Exam', provider: 'Dr. Sarah Mitchell', fee: 65, status: 'completed' },
-  { id: 'a6', date: '2025-04-08', procedure: 'D1110 - Adult Prophylaxis', provider: 'Lisa Chen, RDH', fee: 115, status: 'completed' },
-];
-
-const mockClaims = [
-  { id: 'c1', date: '2026-03-12', payer: 'Delta Dental PPO', amount: 180, status: 'paid' },
-  { id: 'c2', date: '2025-10-15', payer: 'Delta Dental PPO', amount: 317, status: 'paid' },
-  { id: 'c3', date: '2025-04-08', payer: 'Delta Dental PPO', amount: 180, status: 'paid' },
-  { id: 'c4', date: '2024-10-10', payer: 'Delta Dental PPO', amount: 455, status: 'denied' },
-];
-
-const mockCommunications = [
-  {
-    id: 'comm1',
-    timestamp: 'Mar 10, 2026',
-    title: 'Appointment Reminder Sent',
-    description: 'Automated SMS reminder for March 12th cleaning appointment.',
-    status: 'success' as const,
-  },
-  {
-    id: 'comm2',
-    timestamp: 'Mar 5, 2026',
-    title: 'Insurance Verification Completed',
-    description: 'Eligibility confirmed with Delta Dental. Coverage active through 12/31/2026.',
-    status: 'info' as const,
-  },
-  {
-    id: 'comm3',
-    timestamp: 'Feb 20, 2026',
-    title: 'Recall Notice Sent',
-    description: 'Email recall notice sent for overdue prophylaxis appointment.',
-    status: 'warning' as const,
-  },
-  {
-    id: 'comm4',
-    timestamp: 'Oct 16, 2025',
-    title: 'Statement Sent',
-    description: 'Patient statement mailed for outstanding balance of $45.00.',
-    status: 'info' as const,
-  },
-  {
-    id: 'comm5',
-    timestamp: 'Oct 15, 2025',
-    title: 'Claim Submitted',
-    description: 'Claim CLM-2025-10-15 submitted electronically to Delta Dental.',
-    status: 'success' as const,
-  },
-];
 
 const claimStatusVariant = (status: string) => {
   switch (status) {
@@ -99,6 +45,60 @@ export default function PatientDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('insurance');
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Sub-tab data from APIs
+  const [appointments, setAppointments] = useState<{ id: string; date: string; procedure: string; provider: string; fee: number; status: string }[]>([]);
+  const [claims, setClaims] = useState<{ id: string; date: string; payer: string; amount: number; status: string }[]>([]);
+  const [communications, setCommunications] = useState<{ id: string; timestamp: string; title: string; description: string; status: 'success' | 'info' | 'warning' | 'error' }[]>([]);
+
+  useEffect(() => {
+    if (!params.id) return;
+    // Fetch appointments for this patient
+    api.get<{ data: { pmsId?: string; date?: string; procedureCode?: string; procedureDescription?: string; provider?: string; fee?: number; status?: string }[] }>(`/api/appointments?patient_id=${params.id}&date_from=2024-01-01&date_to=2027-12-31`)
+      .then(res => {
+        setAppointments((res.data || []).map((a, i) => ({
+          id: a.pmsId ?? `a${i}`,
+          date: a.date ?? '',
+          procedure: `${a.procedureCode ?? ''} - ${a.procedureDescription ?? ''}`,
+          provider: a.provider ?? '',
+          fee: a.fee ?? 0,
+          status: a.status ?? 'completed',
+        })));
+      })
+      .catch(() => {});
+
+    // Fetch claims for this patient
+    api.get<PaginatedResponse<ApiClaim>>(`/api/claims?patient_id=${params.id}&limit=20`)
+      .then(res => {
+        setClaims(res.data.map(c => ({
+          id: c.id,
+          date: c.dateSubmitted ?? c.createdAt,
+          payer: c.payerName ?? 'Unknown',
+          amount: typeof c.amountBilled === 'string' ? parseFloat(c.amountBilled) || 0 : (c.amountBilled ?? 0),
+          status: c.status ?? 'submitted',
+        })));
+      })
+      .catch(() => {});
+
+    // Fetch notifications as communications
+    api.get<PaginatedResponse<ApiNotification>>(`/api/notifications?related_entity_id=${params.id}&limit=10`)
+      .then(res => {
+        setCommunications(res.data.map(n => {
+          const mapped = mapApiNotificationToNotification(n);
+          const statusMap: Record<string, 'success' | 'info' | 'warning' | 'error'> = {
+            success: 'success', info: 'info', failure: 'error', denial: 'warning', action_required: 'warning',
+          };
+          return {
+            id: mapped.id,
+            timestamp: formatDate(mapped.timestamp),
+            title: mapped.title,
+            description: mapped.message,
+            status: statusMap[mapped.category] ?? 'info',
+          };
+        }));
+      })
+      .catch(() => {});
+  }, [params.id]);
 
   const handleCopy = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -315,9 +315,9 @@ export default function PatientDetailPage() {
       {/* Tab content */}
       <div className="tab-content">
         {activeTab === 'insurance' && <InsuranceTab patient={patient} secondaryInsurance={secondaryInsurance} />}
-        {activeTab === 'appointments' && <AppointmentsTab />}
-        {activeTab === 'claims' && <ClaimsTab />}
-        {activeTab === 'communications' && <CommunicationsTab />}
+        {activeTab === 'appointments' && <AppointmentsTab appointments={appointments} />}
+        {activeTab === 'claims' && <ClaimsTab claims={claims} />}
+        {activeTab === 'communications' && <CommunicationsTab communications={communications} />}
       </div>
 
       <style jsx>{`
@@ -540,7 +540,7 @@ function InsuranceCard({
 }
 
 /* ===================== Appointments Tab ===================== */
-function AppointmentsTab() {
+function AppointmentsTab({ appointments }: { appointments: { id: string; date: string; procedure: string; provider: string; fee: number; status: string }[] }) {
   return (
     <Card>
       <div className="table-wrap">
@@ -555,7 +555,7 @@ function AppointmentsTab() {
             </tr>
           </thead>
           <tbody>
-            {mockAppointments.map((appt) => (
+            {appointments.map((appt) => (
               <tr key={appt.id}>
                 <td className="mono">{formatDate(appt.date)}</td>
                 <td>{appt.procedure}</td>
@@ -613,7 +613,7 @@ function AppointmentsTab() {
 }
 
 /* ===================== Claims Tab ===================== */
-function ClaimsTab() {
+function ClaimsTab({ claims }: { claims: { id: string; date: string; payer: string; amount: number; status: string }[] }) {
   return (
     <Card>
       <div className="table-wrap">
@@ -627,7 +627,7 @@ function ClaimsTab() {
             </tr>
           </thead>
           <tbody>
-            {mockClaims.map((claim) => (
+            {claims.map((claim) => (
               <tr key={claim.id}>
                 <td className="mono">{formatDate(claim.date)}</td>
                 <td>{claim.payer}</td>
@@ -684,10 +684,10 @@ function ClaimsTab() {
 }
 
 /* ===================== Communications Tab ===================== */
-function CommunicationsTab() {
+function CommunicationsTab({ communications }: { communications: { id: string; timestamp: string; title: string; description: string; status: 'success' | 'info' | 'warning' | 'error' }[] }) {
   return (
     <Card>
-      <Timeline items={mockCommunications} />
+      <Timeline items={communications} />
     </Card>
   );
 }

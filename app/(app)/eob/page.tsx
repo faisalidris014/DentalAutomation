@@ -1,4 +1,3 @@
-// TODO: Wire to real API when backend EOB endpoints are available (Phase 3+)
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,80 +7,35 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { NavPill } from '@/components/ui/NavPill';
 import { InfoIcon } from '@/components/ui/InfoIcon';
+import { api } from '@/lib/api';
+import { mapApiEobToEOB } from '@/lib/adapters';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import type { EOB } from '@/types';
-
-const mockEOBs: EOB[] = [
-  {
-    id: 'eob_1', claimId: 'clm_1', patientId: 'pat_1', patientName: 'Maria Santos',
-    clinicId: 'clinic_1', payerId: 'delta_dental', payerName: 'Delta Dental',
-    dateOfService: '2026-03-10', dateReceived: '2026-03-25', checkNumber: 'CHK-445921',
-    totalBilled: 345.00, totalAllowed: 310.00, totalPaid: 248.00,
-    totalPatientResp: 62.00, totalAdjustment: 35.00,
-    lineItems: [
-      { procedureCode: 'D0120', procedureDescription: 'Periodic Oral Evaluation', fee: 52.00, allowedAmount: 48.00, deductible: 0, copay: 0, paidAmount: 48.00, patientResp: 0, adjustmentAmount: 4.00 },
-      { procedureCode: 'D1110', procedureDescription: 'Prophylaxis - Adult', fee: 108.00, allowedAmount: 98.00, deductible: 0, copay: 0, paidAmount: 98.00, patientResp: 0, adjustmentAmount: 10.00 },
-      { procedureCode: 'D2391', procedureDescription: 'Resin Composite - 1 Surface, Posterior', toothNumber: '14', fee: 185.00, allowedAmount: 164.00, deductible: 0, copay: 0, paidAmount: 102.00, patientResp: 62.00, adjustmentAmount: 21.00 },
-    ],
-  },
-  {
-    id: 'eob_2', claimId: 'clm_3', patientId: 'pat_3', patientName: 'James Wilson',
-    clinicId: 'clinic_1', payerId: 'cigna', payerName: 'Cigna',
-    dateOfService: '2026-03-15', dateReceived: '2026-03-28', checkNumber: 'CHK-773201',
-    totalBilled: 520.00, totalAllowed: 475.00, totalPaid: 380.00,
-    totalPatientResp: 95.00, totalAdjustment: 45.00,
-    lineItems: [
-      { procedureCode: 'D0274', procedureDescription: 'Bitewings - Four Films', fee: 68.00, allowedAmount: 62.00, deductible: 0, copay: 0, paidAmount: 62.00, patientResp: 0, adjustmentAmount: 6.00 },
-      { procedureCode: 'D2740', procedureDescription: 'Crown - Porcelain/Ceramic', toothNumber: '30', fee: 452.00, allowedAmount: 413.00, deductible: 0, copay: 0, paidAmount: 318.00, patientResp: 95.00, adjustmentAmount: 39.00 },
-    ],
-  },
-  {
-    id: 'eob_3', claimId: 'clm_5', patientId: 'pat_5', patientName: 'Robert Kim',
-    clinicId: 'clinic_1', payerId: 'metlife', payerName: 'MetLife',
-    dateOfService: '2026-03-18', dateReceived: '2026-04-01', checkNumber: 'CHK-882445',
-    totalBilled: 1250.00, totalAllowed: 1120.00, totalPaid: 784.00,
-    totalPatientResp: 336.00, totalAdjustment: 130.00,
-    lineItems: [
-      { procedureCode: 'D4341', procedureDescription: 'Scaling and Root Planing - Per Quadrant', toothNumber: 'UR', fee: 312.00, allowedAmount: 280.00, deductible: 50.00, copay: 0, paidAmount: 184.00, patientResp: 96.00, adjustmentAmount: 32.00 },
-      { procedureCode: 'D4341', procedureDescription: 'Scaling and Root Planing - Per Quadrant', toothNumber: 'UL', fee: 312.00, allowedAmount: 280.00, deductible: 0, copay: 0, paidAmount: 200.00, patientResp: 80.00, adjustmentAmount: 32.00 },
-      { procedureCode: 'D4341', procedureDescription: 'Scaling and Root Planing - Per Quadrant', toothNumber: 'LR', fee: 312.00, allowedAmount: 280.00, deductible: 0, copay: 0, paidAmount: 200.00, patientResp: 80.00, adjustmentAmount: 32.00 },
-      { procedureCode: 'D4341', procedureDescription: 'Scaling and Root Planing - Per Quadrant', toothNumber: 'LL', fee: 314.00, allowedAmount: 280.00, deductible: 0, copay: 0, paidAmount: 200.00, patientResp: 80.00, adjustmentAmount: 34.00 },
-    ],
-  },
-  {
-    id: 'eob_4', claimId: 'clm_8', patientId: 'pat_8', patientName: 'Linda Patel',
-    clinicId: 'clinic_1', payerId: 'delta_dental', payerName: 'Delta Dental',
-    dateOfService: '2026-03-20', dateReceived: '2026-04-03', checkNumber: 'CHK-556710',
-    totalBilled: 160.00, totalAllowed: 148.00, totalPaid: 148.00,
-    totalPatientResp: 0, totalAdjustment: 12.00,
-    lineItems: [
-      { procedureCode: 'D0120', procedureDescription: 'Periodic Oral Evaluation', fee: 52.00, allowedAmount: 48.00, deductible: 0, copay: 0, paidAmount: 48.00, patientResp: 0, adjustmentAmount: 4.00 },
-      { procedureCode: 'D1110', procedureDescription: 'Prophylaxis - Adult', fee: 108.00, allowedAmount: 100.00, deductible: 0, copay: 0, paidAmount: 100.00, patientResp: 0, adjustmentAmount: 8.00 },
-    ],
-  },
-  {
-    id: 'eob_5', claimId: 'clm_10', patientId: 'pat_10', patientName: 'David Nguyen',
-    clinicId: 'clinic_1', payerId: 'cigna', payerName: 'Cigna',
-    dateOfService: '2026-03-22', dateReceived: '2026-04-05', checkNumber: 'CHK-991834',
-    totalBilled: 235.00, totalAllowed: 212.00, totalPaid: 170.00,
-    totalPatientResp: 42.00, totalAdjustment: 23.00,
-    lineItems: [
-      { procedureCode: 'D0120', procedureDescription: 'Periodic Oral Evaluation', fee: 52.00, allowedAmount: 48.00, deductible: 0, copay: 0, paidAmount: 48.00, patientResp: 0, adjustmentAmount: 4.00 },
-      { procedureCode: 'D0274', procedureDescription: 'Bitewings - Four Films', fee: 68.00, allowedAmount: 62.00, deductible: 0, copay: 0, paidAmount: 62.00, patientResp: 0, adjustmentAmount: 6.00 },
-      { procedureCode: 'D2392', procedureDescription: 'Resin Composite - 2 Surfaces, Posterior', toothNumber: '19', fee: 115.00, allowedAmount: 102.00, deductible: 0, copay: 0, paidAmount: 60.00, patientResp: 42.00, adjustmentAmount: 13.00 },
-    ],
-  },
-];
+import type { PaginatedResponse, ApiEob } from '@/types/api';
 
 const payerFilters = ['All', 'Delta Dental', 'Cigna', 'MetLife'];
 
 export default function EOBPage() {
+  const [eobs, setEobs] = useState<EOB[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedPayer, setSelectedPayer] = useState('All');
   const [selectedEOB, setSelectedEOB] = useState<EOB | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [syncLabel, setSyncLabel] = useState('2h ago');
+
+  const fetchEobs = () => {
+    setLoading(true);
+    setError(null);
+    api.get<PaginatedResponse<ApiEob>>('/api/eobs')
+      .then(res => setEobs(res.data.map(mapApiEobToEOB)))
+      .catch(() => setError('Failed to load EOBs. Check your connection and try again.'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchEobs(); }, []);
 
   useEffect(() => {
     if (!lastSyncTime) return;
@@ -98,8 +52,8 @@ export default function EOBPage() {
   }, [lastSyncTime]);
 
   const filtered = selectedPayer === 'All'
-    ? mockEOBs
-    : mockEOBs.filter(e => e.payerName === selectedPayer);
+    ? eobs
+    : eobs.filter(e => e.payerName === selectedPayer);
 
   const handleSync = () => {
     setSyncing(true);
@@ -132,6 +86,14 @@ export default function EOBPage() {
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="error-banner">
+          <RefreshCw size={16} />
+          <span>{error}</span>
+          <button className="retry-btn" onClick={fetchEobs}>Retry</button>
+        </div>
+      )}
 
       <div className="eob-filters">
         <Filter size={14} style={{ color: 'var(--text-tertiary)' }} />
@@ -429,6 +391,33 @@ export default function EOBPage() {
           border-top: 1px solid var(--border);
           padding-top: var(--space-sm);
           margin-top: var(--space-xs);
+        }
+        .error-banner {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+          padding: var(--space-md) var(--space-lg);
+          background: var(--red-dim);
+          border: 1px solid rgba(248, 113, 113, 0.2);
+          border-radius: var(--radius-md);
+          color: var(--red);
+          font-size: var(--text-sm);
+        }
+        .retry-btn {
+          margin-left: auto;
+          padding: 4px 12px;
+          font-size: var(--text-xs);
+          font-weight: 600;
+          color: var(--text-primary);
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        .retry-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: var(--border-hover);
         }
       `}</style>
       <style jsx global>{`

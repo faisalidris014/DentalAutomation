@@ -1,4 +1,3 @@
-// TODO: Wire to real API when backend recalls endpoints are available (Phase 3+)
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -23,10 +22,12 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { NavPill } from '@/components/ui/NavPill';
 import { Avatar } from '@/components/ui/Avatar';
-import { getRecalls, sendRecallReminder } from '@/lib/mockApi';
+import { api } from '@/lib/api';
+import { mapApiRecallToRecall } from '@/lib/adapters';
 import { formatDate, statusColor, getInitials } from '@/lib/formatters';
 import { useRole } from '@/context/RoleContext';
 import type { Recall } from '@/types';
+import type { PaginatedResponse, ApiRecall } from '@/types/api';
 
 type RecallFilter = 'All' | 'Prophy' | 'Perio' | 'Child Prophy';
 
@@ -47,6 +48,7 @@ export default function RecallsPage() {
   const { role, currentClinic } = useRole();
   const [recalls, setRecalls] = useState<Recall[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<RecallFilter>('All');
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
@@ -55,12 +57,16 @@ export default function RecallsPage() {
   const [intervals, setIntervals] = useState({ first: 7, second: 14, third: 30 });
   const [settingsSaved, setSettingsSaved] = useState(false);
 
-  useEffect(() => {
-    getRecalls(currentClinic.id).then(data => {
-      setRecalls(data);
-      setLoading(false);
-    });
+  const fetchRecalls = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    api.get<PaginatedResponse<ApiRecall>>(`/api/recalls?clinic_id=${currentClinic.id}`)
+      .then(res => setRecalls(res.data.map(mapApiRecallToRecall)))
+      .catch(() => setError('Failed to load recalls. Check your connection and try again.'))
+      .finally(() => setLoading(false));
   }, [currentClinic.id]);
+
+  useEffect(() => { fetchRecalls(); }, [fetchRecalls]);
 
   const filtered = filter === 'All'
     ? recalls
@@ -81,7 +87,8 @@ export default function RecallsPage() {
 
   const handleSendReminder = useCallback(async (recallId: string) => {
     setSendingId(recallId);
-    await sendRecallReminder(recallId);
+    const patientId = recallId.replace('recall_', '');
+    await api.post('/api/recalls', { recallId, patientId }).catch(() => {});
     setSendingId(null);
     setSentIds(prev => new Set(prev).add(recallId));
   }, []);
@@ -93,7 +100,8 @@ export default function RecallsPage() {
     );
     for (const r of pending) {
       setSendingId(r.id);
-      await sendRecallReminder(r.id);
+      const patientId = r.id.replace('recall_', '');
+      await api.post('/api/recalls', { recallId: r.id, patientId }).catch(() => {});
       setSentIds(prev => new Set(prev).add(r.id));
     }
     setSendingId(null);
@@ -119,6 +127,14 @@ export default function RecallsPage() {
           )}
         </button>
       </div>
+
+      {error && (
+        <div className="error-banner">
+          <Bell size={16} />
+          <span>{error}</span>
+          <button className="retry-btn" onClick={fetchRecalls}>Retry</button>
+        </div>
+      )}
 
       {/* KPI Summary */}
       <div className="kpi-grid">
@@ -619,6 +635,33 @@ export default function RecallsPage() {
         .btn-save-settings:hover {
           background: var(--accent-hover);
           box-shadow: var(--shadow-glow);
+        }
+        .error-banner {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+          padding: var(--space-md) var(--space-lg);
+          background: var(--red-dim);
+          border: 1px solid rgba(248, 113, 113, 0.2);
+          border-radius: var(--radius-md);
+          color: var(--red);
+          font-size: var(--text-sm);
+        }
+        .retry-btn {
+          margin-left: auto;
+          padding: 4px 12px;
+          font-size: var(--text-xs);
+          font-weight: 600;
+          color: var(--text-primary);
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        .retry-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: var(--border-hover);
         }
       `}</style>
     </div>

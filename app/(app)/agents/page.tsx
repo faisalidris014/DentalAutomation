@@ -1,7 +1,6 @@
-// TODO: Wire to real API when backend agent monitoring endpoints are available (Phase 3+)
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HardDrive, Upload, FileText, Wifi, WifiOff, Database, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -9,60 +8,28 @@ import { StatusDot } from '@/components/ui/StatusDot';
 import { KPICard } from '@/components/ui/KPICard';
 import { Timeline } from '@/components/ui/Timeline';
 import { useRole } from '@/context/RoleContext';
+import { api } from '@/lib/api';
+import { mapApiAgentToAgent } from '@/lib/adapters';
 import { formatRelativeTime } from '@/lib/formatters';
+import type { AgentStatus } from '@/types';
+import type { SingleResponse, ApiAgent } from '@/types/api';
 
-interface AgentData {
-  id: string;
-  clinicName: string;
-  status: 'online' | 'offline' | 'updating';
-  version: string;
-  latestVersion: string;
-  lastHeartbeat: string;
-  jobsInQueue: number;
-  jobsCompletedToday: number;
-  openDentalConnected: boolean;
-  uptime: string;
-  logs: { timestamp: string; level: 'info' | 'warning' | 'error'; message: string }[];
-}
-
-const agents: AgentData[] = [
-  {
-    id: 'agent_1', clinicName: 'Bright Smiles Dental', status: 'online', version: '2.4.1', latestVersion: '2.4.1',
-    lastHeartbeat: '2026-04-07T14:34:55Z', jobsInQueue: 3, jobsCompletedToday: 47, openDentalConnected: true, uptime: '14d 6h',
-    logs: [
-      { timestamp: '2026-04-07T14:34:55Z', level: 'info', message: 'Heartbeat sent — all systems nominal' },
-      { timestamp: '2026-04-07T14:30:00Z', level: 'info', message: 'Completed job: eligibility check for Maria Santos' },
-      { timestamp: '2026-04-07T14:15:00Z', level: 'info', message: 'Completed job: claim submission CLM-7823' },
-      { timestamp: '2026-04-07T13:45:00Z', level: 'warning', message: 'Delta Dental portal slow response (8.2s)' },
-      { timestamp: '2026-04-07T13:00:00Z', level: 'info', message: 'Patient sync completed — 142 records synchronized' },
-    ],
-  },
-  {
-    id: 'agent_2', clinicName: 'Lakewood Family Dentistry', status: 'online', version: '2.3.8', latestVersion: '2.4.1',
-    lastHeartbeat: '2026-04-07T14:34:30Z', jobsInQueue: 0, jobsCompletedToday: 23, openDentalConnected: true, uptime: '30d 12h',
-    logs: [
-      { timestamp: '2026-04-07T14:34:30Z', level: 'info', message: 'Heartbeat sent' },
-      { timestamp: '2026-04-07T14:00:00Z', level: 'warning', message: 'Agent version 2.3.8 is outdated — update available (2.4.1)' },
-      { timestamp: '2026-04-07T12:30:00Z', level: 'info', message: 'Completed batch: 5 recall reminders sent' },
-      { timestamp: '2026-04-07T10:00:00Z', level: 'info', message: 'Morning sync completed — 98 records' },
-    ],
-  },
-  {
-    id: 'agent_3', clinicName: 'North Star Dental Group', status: 'offline', version: '2.4.0', latestVersion: '2.4.1',
-    lastHeartbeat: '2026-04-07T10:15:00Z', jobsInQueue: 0, jobsCompletedToday: 0, openDentalConnected: false, uptime: '0d 0h',
-    logs: [
-      { timestamp: '2026-04-07T10:15:00Z', level: 'error', message: 'Connection lost — unable to reach cloud API' },
-      { timestamp: '2026-04-07T10:14:50Z', level: 'error', message: 'OpenDental connection failed — service not responding' },
-      { timestamp: '2026-04-07T10:14:30Z', level: 'warning', message: 'Network connectivity check failed — retrying...' },
-      { timestamp: '2026-04-07T09:00:00Z', level: 'info', message: 'Morning sync started' },
-      { timestamp: '2026-04-07T08:00:00Z', level: 'info', message: 'Agent started — version 2.4.0' },
-    ],
-  },
-];
+type AgentData = AgentStatus;
 
 export default function AgentsPage() {
   const { role } = useRole();
+  const [agents, setAgents] = useState<AgentData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setError(null);
+    api.get<{ data: ApiAgent[] }>('/api/agents')
+      .then(res => setAgents(res.data.map(mapApiAgentToAgent)))
+      .catch(() => setError('Failed to load agents. Check your connection and try again.'))
+      .finally(() => setLoading(false));
+  }, []);
 
   if (role !== 'it_admin') {
     return (
@@ -81,6 +48,14 @@ export default function AgentsPage() {
     <div className="agents-page">
       <h1 className="page-title">Local Agent Monitor</h1>
       <p className="page-subtitle">Manage and monitor DentalFlow agents deployed at clinic locations</p>
+
+      {error && (
+        <div className="error-banner">
+          <WifiOff size={16} />
+          <span>{error}</span>
+          <button className="retry-btn" onClick={() => { setLoading(true); setError(null); api.get<{ data: ApiAgent[] }>('/api/agents').then(res => setAgents(res.data.map(mapApiAgentToAgent))).catch(() => setError('Failed to load agents. Check your connection and try again.')).finally(() => setLoading(false)); }}>Retry</button>
+        </div>
+      )}
 
       <div className="kpi-grid">
         <KPICard label="Agents Online" value={`${onlineCount}/${agents.length}`} icon={<Wifi size={18} />} accentColor="var(--green)" />
@@ -308,6 +283,34 @@ export default function AgentsPage() {
           height: 1px;
           background: var(--border);
           margin-bottom: var(--space-md);
+        }
+        .error-banner {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+          padding: var(--space-md) var(--space-lg);
+          background: var(--red-dim);
+          border: 1px solid rgba(248, 113, 113, 0.2);
+          border-radius: var(--radius-md);
+          color: var(--red);
+          font-size: var(--text-sm);
+          margin-bottom: var(--space-md);
+        }
+        .retry-btn {
+          margin-left: auto;
+          padding: 4px 12px;
+          font-size: var(--text-xs);
+          font-weight: 600;
+          color: var(--text-primary);
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        .retry-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: var(--border-hover);
         }
       `}</style>
     </div>

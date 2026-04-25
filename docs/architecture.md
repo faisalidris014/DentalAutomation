@@ -46,7 +46,6 @@ Browser (React 19)
   - `server/services/` -- Business logic (auth, eligibility, sync, queue, notifications, encryption)
   - `server/adapters/` -- External system integrations (PMS, payer)
   - `server/config/` -- Environment config with Zod validation
-- `data/mock/` -- Mock JSON data (legacy, being replaced by real DB)
 - `styles/` -- Global CSS with design system variables
 
 ## Data Flow

@@ -1,24 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/lib/api';
 
 export default function LoginPage() {
   const { login, isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      router.push('/dashboard');
-    }
-  }, [isLoading, isAuthenticated, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/connection';
 import { users, clinics } from '../db/schema';
@@ -10,6 +10,14 @@ import { withAuth, type AuthContext } from '../middleware/auth';
 import { withValidation, loginSchema, refreshSchema } from '../middleware/validators';
 import { withAudit } from '../middleware/audit';
 import { AuthenticationError } from '../middleware/errors';
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  accessTokenCookieOptions,
+  refreshTokenCookieOptions,
+} from '@/lib/auth-cookies';
+
+const isProd = process.env.NODE_ENV === 'production';
 
 // POST /api/auth/login
 export const loginHandler = withErrorHandler(
@@ -44,7 +52,7 @@ export const loginHandler = withErrorHandler(
       .set({ lastLoginAt: new Date(), updatedAt: new Date() })
       .where(eq(users.id, user.id));
 
-    return Response.json({
+    const response = NextResponse.json({
       accessToken,
       refreshToken,
       user: {
@@ -56,15 +64,26 @@ export const loginHandler = withErrorHandler(
         clinicId: user.clinicId,
       },
     });
+    response.cookies.set(ACCESS_TOKEN_COOKIE, accessToken, accessTokenCookieOptions(isProd));
+    response.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, refreshTokenCookieOptions(isProd));
+    return response;
   }),
 );
 
 // POST /api/auth/refresh
 export const refreshHandler = withErrorHandler(
-  withValidation(refreshSchema, async (_request, _context, data) => {
+  withValidation(refreshSchema, async (request, _context, data) => {
+    const rt = data.refreshToken || request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
+    if (!rt) {
+      throw new AuthenticationError('Missing refresh token');
+    }
+
     try {
-      const tokens = await rotateRefreshToken(data.refreshToken);
-      return Response.json(tokens);
+      const tokens = await rotateRefreshToken(rt);
+      const response = NextResponse.json(tokens);
+      response.cookies.set(ACCESS_TOKEN_COOKIE, tokens.accessToken, accessTokenCookieOptions(isProd));
+      response.cookies.set(REFRESH_TOKEN_COOKIE, tokens.refreshToken, refreshTokenCookieOptions(isProd));
+      return response;
     } catch {
       throw new AuthenticationError('Invalid or expired refresh token');
     }
@@ -73,9 +92,16 @@ export const refreshHandler = withErrorHandler(
 
 // POST /api/auth/logout
 export const logoutHandler = withErrorHandler(
-  withValidation(refreshSchema, async (_request, _context, data) => {
-    await revokeRefreshToken(data.refreshToken);
-    return Response.json({ success: true });
+  withValidation(refreshSchema, async (request, _context, data) => {
+    const rt = data.refreshToken || request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
+    if (rt) {
+      await revokeRefreshToken(rt).catch(() => {});
+    }
+
+    const response = NextResponse.json({ success: true });
+    response.cookies.set(ACCESS_TOKEN_COOKIE, '', { ...accessTokenCookieOptions(isProd), maxAge: 0 });
+    response.cookies.set(REFRESH_TOKEN_COOKIE, '', { ...refreshTokenCookieOptions(isProd), maxAge: 0 });
+    return response;
   }),
 );
 

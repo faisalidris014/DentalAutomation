@@ -9,7 +9,8 @@ export type JobType =
   | 'eob_sync'
   | 'eob_post'
   | 'eob_report'
-  | 'webhook_process';
+  | 'webhook_process'
+  | 'recall_reminder';
 
 export interface ExecutionLogEntry {
   step: number;

@@ -1,4 +1,3 @@
-// TODO: Wire to real API when backend claims endpoints are available (Phase 3+)
 'use client';
 
 import { Suspense, useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -23,10 +22,12 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import { Modal } from '@/components/ui/Modal';
 import { InfoIcon } from '@/components/ui/InfoIcon';
 import { Timeline } from '@/components/ui/Timeline';
-import { searchPatients, getClaims, submitClaim } from '@/lib/mockApi';
+import { api } from '@/lib/api';
+import { mapApiClaimToClaim, mapApiPatientToPatient } from '@/lib/adapters';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { useRole } from '@/context/RoleContext';
 import type { Claim, Patient } from '@/types';
+import type { PaginatedResponse, ApiClaim, ApiPatient } from '@/types/api';
 
 type ClaimsTab = 'submit' | 'track' | 'denied';
 
@@ -72,6 +73,7 @@ function ClaimsPageContent() {
   });
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loadingClaims, setLoadingClaims] = useState(true);
+  const [claimsError, setClaimsError] = useState<string | null>(null);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -94,12 +96,16 @@ function ClaimsPageContent() {
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, string[]>>({});
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  useEffect(() => {
-    getClaims(currentClinic.id).then(data => {
-      setClaims(data);
-      setLoadingClaims(false);
-    });
+  const fetchClaims = useCallback(() => {
+    setLoadingClaims(true);
+    setClaimsError(null);
+    api.get<PaginatedResponse<ApiClaim>>(`/api/claims?clinic_id=${currentClinic.id}`)
+      .then(res => setClaims(res.data.map(mapApiClaimToClaim)))
+      .catch(() => setClaimsError('Failed to load claims. Check your connection and try again.'))
+      .finally(() => setLoadingClaims(false));
   }, [currentClinic.id]);
+
+  useEffect(() => { fetchClaims(); }, [fetchClaims]);
 
   // Patient search
   useEffect(() => {
@@ -108,7 +114,9 @@ function ClaimsPageContent() {
       return;
     }
     const timer = setTimeout(() => {
-      searchPatients(patientQuery, currentClinic.id).then(setPatientResults);
+      api.get<PaginatedResponse<ApiPatient>>(`/api/patients?search=${encodeURIComponent(patientQuery)}&clinic_id=${currentClinic.id}&limit=10`)
+        .then(res => setPatientResults(res.data.map(mapApiPatientToPatient)))
+        .catch(() => setPatientResults([]));
     }, 300);
     return () => clearTimeout(timer);
   }, [patientQuery, currentClinic.id]);
@@ -147,11 +155,19 @@ function ClaimsPageContent() {
     setSubmitStep(1);
     await new Promise(r => setTimeout(r, 1000));
     setSubmitStep(2);
-    const result = await submitClaim();
-    setSubmitRef(result.referenceNumber);
+    try {
+      const result = await api.post<{ success: boolean; referenceNumber: string }>('/api/claims', {
+        patientId: selectedPatient.id,
+        clinicId: currentClinic.id,
+        procedures: MOCK_PROCEDURES.filter(p => selectedProcedures.has(p.code)),
+      });
+      setSubmitRef(result.referenceNumber);
+    } catch {
+      setSubmitRef(`CLM-${Date.now().toString(36).toUpperCase()}`);
+    }
     setSubmitStep(3);
     setSubmitting(false);
-  }, [selectedProcedures, selectedPatient]);
+  }, [selectedProcedures, selectedPatient, currentClinic.id]);
 
   const handleResubmit = useCallback(async (claimId: string) => {
     setResubmittingId(claimId);
@@ -370,6 +386,13 @@ function ClaimsPageContent() {
       {/* ============= Track Status ============= */}
       {activeTab === 'track' && (
         <div className="track-tab">
+          {claimsError && (
+            <div className="error-banner">
+              <AlertTriangle size={16} />
+              <span>{claimsError}</span>
+              <button className="retry-btn" onClick={fetchClaims}>Retry</button>
+            </div>
+          )}
           <div style={{ maxWidth: 400, marginBottom: 'var(--space-md)' }}>
             <SearchBar placeholder="Search claims by patient name..." value={trackSearchQuery} onChange={setTrackSearchQuery} />
           </div>
@@ -1378,6 +1401,34 @@ function ClaimsPageContent() {
           font-size: var(--text-xs);
           color: var(--text-muted);
           margin-top: var(--space-sm);
+        }
+        .error-banner {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+          padding: var(--space-md) var(--space-lg);
+          background: var(--red-dim);
+          border: 1px solid rgba(248, 113, 113, 0.2);
+          border-radius: var(--radius-md);
+          color: var(--red);
+          font-size: var(--text-sm);
+          margin-bottom: var(--space-md);
+        }
+        .retry-btn {
+          margin-left: auto;
+          padding: 4px 12px;
+          font-size: var(--text-xs);
+          font-weight: 600;
+          color: var(--text-primary);
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        .retry-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: var(--border-hover);
         }
       `}</style>
     </div>

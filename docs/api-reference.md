@@ -941,6 +941,224 @@ Response shape varies by the authenticated user's role:
 
 ---
 
+### Claims
+
+#### GET /api/claims
+
+List claims from the claims cache. **Roles**: all.
+
+**Query Parameters**: `clinic_id`, `status`, `search`, `patient_id`, `limit`, `offset`
+
+Search matches against `payerName` and `pmsClaimId` (case-insensitive). The `patient_id` parameter filters claims for a specific patient.
+
+**Response** `200`:
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "clinicId": "uuid",
+      "patientId": "uuid",
+      "pmsClaimId": "CLM-1234",
+      "payerName": "Delta Dental",
+      "claimType": "primary",
+      "status": "paid",
+      "amountBilled": "345.00",
+      "amountPaid": "248.00",
+      "dateSubmitted": "2026-03-10",
+      "dateReceived": "2026-03-25",
+      "denialCode": null,
+      "denialReason": null,
+      "procedures": [ { "...procedure objects" } ],
+      "patientName": "John Smith",
+      "createdAt": "2026-03-10T10:00:00Z",
+      "updatedAt": "2026-03-25T14:00:00Z"
+    }
+  ],
+  "total": 28,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+---
+
+#### GET /api/claims/:id
+
+Get a single claim with patient name. **Roles**: all.
+
+Non-`it_admin` users can only access claims within their clinic.
+
+**Response** `200`:
+
+```json
+{
+  "data": { "...claim record with patientName" }
+}
+```
+
+**Errors**: `404 NOT_FOUND`.
+
+---
+
+### EOBs
+
+#### GET /api/eobs
+
+List Explanation of Benefits records. **Roles**: all.
+
+**Query Parameters**: `clinic_id`, `search`, `triage_status`, `patient_id`, `limit`, `offset`
+
+Search matches against `payerName` and `checkNumber`. The `triage_status` parameter filters by triage workflow state (`pending`, `auto_posted`, `flagged_for_review`, `manually_posted`, `skipped`).
+
+**Response** `200`:
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "clinicId": "uuid",
+      "patientId": "uuid",
+      "payerName": "Delta Dental",
+      "checkNumber": "CHK-445921",
+      "checkDate": "2026-03-25",
+      "checkAmount": "248.00",
+      "receivedDate": "2026-03-25",
+      "lineItems": [ { "...line item objects" } ],
+      "totalCharged": "345.00",
+      "totalPaid": "248.00",
+      "totalAdjusted": "35.00",
+      "totalPatientResp": "62.00",
+      "triageStatus": "pending",
+      "postedToPms": false,
+      "patientName": "John Smith",
+      "createdAt": "2026-03-25T10:00:00Z",
+      "updatedAt": "2026-03-25T10:00:00Z"
+    }
+  ],
+  "total": 18,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+---
+
+#### GET /api/eobs/:id
+
+Get a single EOB with patient name. **Roles**: all.
+
+Non-`it_admin` users can only access EOBs within their clinic.
+
+**Response** `200`:
+
+```json
+{
+  "data": { "...EOB record with patientName" }
+}
+```
+
+**Errors**: `404 NOT_FOUND`.
+
+---
+
+### Recalls
+
+#### GET /api/recalls
+
+List recall-eligible patients (derived from patients with stale sync dates). **Roles**: all.
+
+**Query Parameters**: `clinic_id`, `limit`, `offset`
+
+Recalls are derived from the `patients_cache` table — patients whose `lastSyncedAt` is older than 6 months are considered overdue for recall.
+
+**Response** `200`:
+
+```json
+{
+  "data": [
+    {
+      "id": "recall_uuid",
+      "patientId": "uuid",
+      "patientName": "John Smith",
+      "clinicId": "uuid",
+      "recallType": "Prophy",
+      "dueDate": "2026-01-15",
+      "daysOverdue": 100,
+      "reminderCount": 0,
+      "contactMethod": "email",
+      "status": "pending",
+      "phone": "503-555-0100",
+      "email": "john@example.com"
+    }
+  ],
+  "total": 12,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+---
+
+#### POST /api/recalls
+
+Send a recall reminder by queuing a `recall_reminder` job. **Roles**: all.
+
+**Request Body**:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `recallId` | string | no | The recall ID (format: `recall_{patientId}`). |
+| `patientId` | string | no | The patient UUID. At least one of `recallId` or `patientId` must be provided. |
+
+**Response** `200`:
+
+```json
+{
+  "success": true,
+  "jobId": "uuid"
+}
+```
+
+---
+
+### Agents
+
+#### GET /api/agents
+
+List local agent status for all visible clinics. **Roles**: `it_admin`, `staff_admin`.
+
+Aggregates clinic data, PMS connection health, and job queue statistics. Each agent entry represents one clinic's local deployment.
+
+**Response** `200`:
+
+```json
+{
+  "data": [
+    {
+      "id": "agent_uuid",
+      "clinicId": "uuid",
+      "clinicName": "Bright Smiles Dental",
+      "status": "online",
+      "version": "2.4.1",
+      "latestVersion": "2.4.1",
+      "lastHeartbeat": "2026-04-07T14:34:55Z",
+      "jobsInQueue": 3,
+      "jobsCompletedToday": 47,
+      "openDentalConnected": true,
+      "uptime": "—",
+      "logs": []
+    }
+  ]
+}
+```
+
+The `status` field is `"online"` if the PMS connection test succeeds, `"offline"` otherwise. `logs` is currently empty (future: will include recent agent activity from a dedicated log store).
+
+---
+
 ### Webhooks
 
 #### POST /api/webhooks/opendental

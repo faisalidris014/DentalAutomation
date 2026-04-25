@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { verifyAccessToken, type JWTPayload } from '../services/auth/jwt';
 import { AuthenticationError, AuthorizationError } from './errors';
+import { ACCESS_TOKEN_COOKIE } from '@/lib/auth-cookies';
 
 type Role = 'it_admin' | 'staff_admin' | 'staff_user';
 
@@ -24,12 +25,15 @@ export function withAuth(
   handler: HandlerWithAuth | ((...args: any[]) => Promise<Response>),
 ): (...args: any[]) => Promise<Response> {
   return async (request, routeContext) => {
+    // Read token from cookie first, fall back to Authorization header
+    const cookieToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
     const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      throw new AuthenticationError('Missing or invalid authorization header');
-    }
+    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const token = cookieToken || headerToken;
 
-    const token = authHeader.slice(7);
+    if (!token) {
+      throw new AuthenticationError('Missing authentication');
+    }
     let payload: JWTPayload;
 
     try {

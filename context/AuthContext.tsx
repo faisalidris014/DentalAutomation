@@ -9,8 +9,8 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { api, setTokens, clearTokens, getAccessToken } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 import { mapApiUserToUser, mapApiClinicToClinic } from '@/lib/adapters';
 import type { Role, User, Clinic } from '@/types';
 import type { LoginResponse, MeResponse } from '@/types/api';
@@ -66,28 +66,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
   const didInit = useRef(false);
 
-  // Hydrate session on mount — if we have a token, fetch /me
+  // Hydrate session on mount — cookie is sent automatically
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;
 
-    if (getAccessToken()) {
-      api.get<MeResponse>('/api/auth/me')
-        .then((res) => {
-          const u = res.user;
-          setUser(mapApiUserToUser(u));
-          setClinic(u.clinic ? mapApiClinicToClinic(u.clinic) : null);
-        })
-        .catch(() => {
-          clearTokens();
-        })
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
+    api.get<MeResponse>('/api/auth/me')
+      .then((res) => {
+        const u = res.user;
+        setUser(mapApiUserToUser(u));
+        setClinic(u.clinic ? mapApiClinicToClinic(u.clinic) : null);
+      })
+      .catch(() => {
+        // Not authenticated — proxy.ts handles redirect
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   // Listen for forced logout from api.ts (refresh failure)
@@ -95,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleLogout = () => {
       setUser(null);
       setClinic(null);
-      clearTokens();
       router.push('/login');
     };
 
@@ -104,10 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const res = await api.post<LoginResponse>('/api/auth/login', { email, password }, { skipAuth: true });
-    setTokens(res.accessToken, res.refreshToken);
+    await api.post<LoginResponse>('/api/auth/login', { email, password });
 
-    // Fetch full user + clinic data
+    // Fetch full user + clinic data (cookies now set by login response)
     const me = await api.get<MeResponse>('/api/auth/me');
     setUser(mapApiUserToUser(me.user));
     setClinic(me.user.clinic ? mapApiClinicToClinic(me.user.clinic) : null);
@@ -117,26 +110,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      const { getRefreshToken } = await import('@/lib/api');
-      const rt = getRefreshToken();
-      if (rt) {
-        await api.post('/api/auth/logout', { refreshToken: rt }, { skipAuth: true }).catch(() => {});
-      }
+      await api.post('/api/auth/logout', {}).catch(() => {});
     } catch {
       // Best-effort logout
     }
     setUser(null);
     setClinic(null);
-    clearTokens();
     router.push('/login');
   }, [router]);
-
-  // Redirect unauthenticated users (except on /login)
-  useEffect(() => {
-    if (!isLoading && !user && pathname !== '/login') {
-      router.push('/login');
-    }
-  }, [isLoading, user, pathname, router]);
 
   return (
     <AuthContext.Provider

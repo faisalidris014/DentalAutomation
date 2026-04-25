@@ -1,5 +1,18 @@
 @AGENTS.md
 
+# Documentation
+
+After completing any code changes, **always update the relevant documentation** in `docs/` to reflect the new state of the codebase. This includes:
+
+- **`docs/architecture.md`** — Update if new directories, modules, adapters, or data flows were added/removed.
+- **`docs/api-reference.md`** — Update if API routes were added, modified, or removed. Include endpoint, method, auth requirements, request/response shapes, and query parameters.
+- **`docs/database.md`** — Update if schema tables, columns, or indexes were changed.
+- **`docs/auth.md`** — Update if authentication or authorization logic changed.
+- **`docs/jobs.md`** — Update if job types, queue behavior, or worker logic changed.
+- **`docs/adapters.md`** — Update if PMS or payer adapters were added or modified.
+
+If a change spans multiple docs, update all of them. Do not leave documentation stale — it is the primary reference for onboarding and debugging. If no existing doc covers the change, create a new one in `docs/`.
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 

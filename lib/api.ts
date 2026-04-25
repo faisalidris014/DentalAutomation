@@ -1,5 +1,6 @@
-// Central API client with JWT auth header injection and transparent token refresh.
-// Tokens are stored in module-scoped variables (memory only, not localStorage).
+// Central API client with cookie-based auth and transparent token refresh.
+// Tokens are stored as HttpOnly cookies set by the auth API routes.
+// The browser sends them automatically on same-origin requests.
 
 export class ApiError extends Error {
   constructor(
@@ -13,37 +14,11 @@ export class ApiError extends Error {
   }
 }
 
-// ─── Token Storage (module-scoped, memory only) ────────────────────────────
-
-let accessToken: string | null = null;
-let refreshToken: string | null = null;
-
-export function setTokens(access: string, refresh: string) {
-  accessToken = access;
-  refreshToken = refresh;
-}
-
-export function clearTokens() {
-  accessToken = null;
-  refreshToken = null;
-}
-
-export function getAccessToken(): string | null {
-  return accessToken;
-}
-
-export function getRefreshToken(): string | null {
-  return refreshToken;
-}
-
 // ─── Refresh Lock (prevents concurrent refresh requests) ───────────────────
 
 let refreshPromise: Promise<boolean> | null = null;
 
 async function attemptRefresh(): Promise<boolean> {
-  if (!refreshToken) return false;
-
-  // If a refresh is already in flight, wait for it
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
@@ -51,19 +26,10 @@ async function attemptRefresh(): Promise<boolean> {
       const res = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({}),
       });
-
-      if (!res.ok) {
-        clearTokens();
-        return false;
-      }
-
-      const data = await res.json();
-      setTokens(data.accessToken, data.refreshToken);
-      return true;
+      return res.ok;
     } catch {
-      clearTokens();
       return false;
     } finally {
       refreshPromise = null;
@@ -77,20 +43,15 @@ async function attemptRefresh(): Promise<boolean> {
 
 interface FetchOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
-  skipAuth?: boolean;
 }
 
 async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
-  const { body, skipAuth, ...init } = options;
+  const { body, ...init } = options;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(init.headers as Record<string, string>),
   };
-
-  if (!skipAuth && accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
-  }
 
   let res = await fetch(path, {
     ...init,
@@ -99,10 +60,9 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
   });
 
   // On 401, attempt token refresh and retry once
-  if (res.status === 401 && !skipAuth && refreshToken) {
+  if (res.status === 401) {
     const refreshed = await attemptRefresh();
     if (refreshed) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
       res = await fetch(path, {
         ...init,
         headers,
