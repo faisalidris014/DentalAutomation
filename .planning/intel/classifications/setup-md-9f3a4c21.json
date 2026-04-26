@@ -1,0 +1,24 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/docs/setup.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "DentalFlow -- Developer Setup Guide",
+  "summary": "Developer onboarding guide covering prerequisites, environment variables, database setup, seed data, npm scripts, and troubleshooting for the DentalFlow app.",
+  "scope": [
+    "developer onboarding",
+    "environment variables",
+    "database migrations",
+    "seed data",
+    "npm scripts",
+    "troubleshooting"
+  ],
+  "cross_refs": [
+    "server/config/index.ts",
+    "server/db/seed.ts",
+    "server/db/migrate.ts"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

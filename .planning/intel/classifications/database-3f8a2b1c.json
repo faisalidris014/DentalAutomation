@@ -1,0 +1,34 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/docs/database.md",
+  "type": "SPEC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Database Schema Reference",
+  "summary": "Drizzle ORM PostgreSQL schema reference defining 13 tables for multi-tenant dental practice management, including columns, constraints, indexes, and entity relationships.",
+  "scope": [
+    "PostgreSQL schema",
+    "Drizzle ORM",
+    "multi-tenancy",
+    "clinics",
+    "users",
+    "refresh_tokens",
+    "patients_cache",
+    "insurance_cache",
+    "eligibility_checks",
+    "eob_records",
+    "claims_cache",
+    "jobs",
+    "notifications",
+    "audit_log",
+    "payer_configs",
+    "settings",
+    "migrations"
+  ],
+  "cross_refs": [
+    "server/db/schema.ts",
+    "server/db/migrations/"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Document is a schema/data model reference (SPEC signal: tables, columns, constraints, indexes, JSON shapes). Has reference-doc tone with TOC and prose, which competes with DOC, but the dominant content is implementation contracts (schema definitions) — SPEC wins per ambiguity rule (SPEC > DOC)."
+}

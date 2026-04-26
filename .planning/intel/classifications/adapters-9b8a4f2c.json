@@ -1,0 +1,39 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/docs/adapters.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Adapter Development Guide",
+  "summary": "Developer guide for DentalFlow's PMS and payer adapter pattern, covering IPMSAdapter/IPayerAdapter interfaces, canonical data models, OpenDental and DentalXChange reference implementations, and steps to add new adapters.",
+  "scope": [
+    "PMS adapter system",
+    "Payer adapter system",
+    "IPMSAdapter interface",
+    "IPayerAdapter interface",
+    "Canonical data models",
+    "OpenDental adapter",
+    "DentalXChange adapter",
+    "Payer classification",
+    "EOB retrieval",
+    "Adapter error handling",
+    "Adapter testing"
+  ],
+  "cross_refs": [
+    "server/adapters/pms/types.ts",
+    "server/adapters/pms/registry.ts",
+    "server/adapters/pms/opendental/types.ts",
+    "server/adapters/pms/opendental/client.ts",
+    "server/adapters/pms/opendental/mappers.ts",
+    "server/adapters/pms/opendental/adapter.ts",
+    "server/adapters/pms/opendental/webhooks.ts",
+    "server/db/seed.ts",
+    "server/services/eob/engine.ts",
+    "server/services/encryption/credentials",
+    "server/adapters/payer/types.ts",
+    "server/adapters/payer/registry.ts",
+    "server/adapters/payer/clearinghouse/dentalxchange.ts",
+    "server/services/eligibility/classifier.ts"
+  ],
+  "locked": false,
+  "precedence": null
+}

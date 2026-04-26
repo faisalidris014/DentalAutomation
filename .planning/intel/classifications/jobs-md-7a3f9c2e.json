@@ -1,0 +1,28 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/docs/jobs.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Background Jobs Guide",
+  "summary": "Reference guide for the PostgreSQL-backed job queue: job types, lifecycle, worker processing, retry logic, priority, execution log, and management API.",
+  "scope": [
+    "job queue",
+    "background workers",
+    "job types",
+    "retry logic",
+    "execution log",
+    "worker invocation endpoint",
+    "jobs API"
+  ],
+  "cross_refs": [
+    "server/services/queue/types.ts",
+    "server/services/queue/manager.ts",
+    "server/services/queue/worker.ts",
+    "server/routes/jobs.ts",
+    "app/api/internal/worker/route.ts",
+    "vercel.json"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

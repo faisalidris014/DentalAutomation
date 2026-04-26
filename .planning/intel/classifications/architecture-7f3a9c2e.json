@@ -1,0 +1,36 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/docs/architecture.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "DentalFlow Architecture Overview",
+  "summary": "Architecture reference describing DentalFlow's Next.js + Postgres stack, middleware chain, multi-tenancy, EOB engine, and phase status.",
+  "scope": [
+    "Next.js App Router",
+    "API middleware chain",
+    "PMS adapter (OpenDental)",
+    "Payer adapter (DentalXChange)",
+    "Eligibility engine",
+    "EOB engine (parser, triage, engine, reporter)",
+    "Sync engine (patients, insurance, claims)",
+    "Job queue",
+    "Auth and security layers",
+    "Multi-tenancy / clinic scoping",
+    "Drizzle/PostgreSQL schema"
+  ],
+  "cross_refs": [
+    "server/routes/",
+    "server/services/",
+    "server/services/eob/",
+    "server/services/eob/triage.ts",
+    "server/services/sync/engine.ts",
+    "server/db/schema.ts",
+    "app/api/webhooks/",
+    "app/(app)/",
+    "app/api/",
+    "app/login/"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

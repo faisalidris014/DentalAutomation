@@ -1,0 +1,25 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/docs/deployment.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Deployment Guide",
+  "summary": "Operational guide for deploying the DentalFlow platform to Vercel, including env vars, database setup, cron worker, security checklist, and HIPAA considerations.",
+  "scope": [
+    "Vercel deployment",
+    "environment variables",
+    "PostgreSQL database",
+    "background worker (cron)",
+    "security checklist",
+    "HIPAA compliance",
+    "monitoring endpoints"
+  ],
+  "cross_refs": [
+    "docs/setup.md",
+    "server/middleware/errorHandler.ts",
+    "server/services/encryption/credentials.ts"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

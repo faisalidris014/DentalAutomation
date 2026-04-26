@@ -1,0 +1,33 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/docs/eligibility.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Eligibility Verification Guide",
+  "summary": "Reference guide describing DentalFlow's eligibility verification flow, payer classification, batch/recheck/webhook triggers, notifications, and PMS write-back outcomes.",
+  "scope": [
+    "eligibility verification engine",
+    "payer adapter registry",
+    "payer classifier",
+    "batch nightly verification",
+    "day-of-service recheck",
+    "webhook-triggered verification",
+    "eligibility notifications",
+    "PMS write-back to OpenDental InsVerify",
+    "DentalXChange clearinghouse adapter",
+    "Minnesota Medicaid adapter"
+  ],
+  "cross_refs": [
+    "server/services/eligibility/engine.ts",
+    "server/services/eligibility/batch.ts",
+    "server/services/eligibility/recheck.ts",
+    "server/services/eligibility/classifier.ts",
+    "server/adapters/payer/types.ts",
+    "server/adapters/payer/registry.ts",
+    "server/routes/webhooks.ts",
+    "server/services/notifications/service.ts"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

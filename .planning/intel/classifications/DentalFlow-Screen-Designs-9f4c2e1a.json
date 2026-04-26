@@ -1,0 +1,21 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/DentalFlow_Screen_Designs.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "DentalFlow — Detailed Screen Designs (Text Wireframes)",
+  "summary": "Text-wireframe UI specification for every DentalFlow screen across IT Admin, Staff Admin, and Staff User roles, including routes, layouts, modals, and empty states.",
+  "scope": [
+    "DentalFlow web UI",
+    "Role-based navigation (IT Admin, Staff Admin, Staff User)",
+    "Dashboard screens",
+    "Patients, Eligibility, Recalls, Claims, EOB, Automations, Agents, Settings, Notifications screens",
+    "Modals (reminder confirmation, add/edit clinic, bulk recall)",
+    "Empty states",
+    "OpenDental connection configuration fields"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

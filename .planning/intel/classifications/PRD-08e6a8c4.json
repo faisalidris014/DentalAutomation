@@ -1,0 +1,26 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/PRD.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "DentalFlow — Production Build PRD (Claude Code Ready)",
+  "summary": "Master product requirements document for converting the DentalFlow Next.js prototype into a production HIPAA-compliant backend covering eligibility verification and EOB automation for the Muath pilot clinic.",
+  "scope": [
+    "DentalFlow platform",
+    "OpenDental PMS adapter",
+    "Payer adapters (DentalXChange clearinghouse, Delta Dental, MetLife, Cigna)",
+    "Eligibility verification engine",
+    "EOB retrieval and posting engine",
+    "PostgreSQL schema (Drizzle ORM)",
+    "JWT auth and RBAC",
+    "Job queue and sync engine",
+    "Webhooks (OpenDental)",
+    "Front-end wiring (10 existing Next.js screens)",
+    "HIPAA audit logging and credential encryption",
+    "Azure hosting and local on-premise agent"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": "Document is positioned and titled as the master PRD but contains substantial SPEC-level content (database schema, adapter interfaces, env config, build phases). Classified as PRD because the document frames itself as the build specification (requirements + scope + Definition of Done acceptance criteria + goals/non-goals); the embedded technical contracts will likely be re-extracted by the synthesizer. No external cross-references to other planning docs were found — only references to in-repo code paths."
+}

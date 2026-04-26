@@ -1,0 +1,37 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/docs/api-reference.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "DentalFlow API Reference",
+  "summary": "Technical API contract reference for DentalFlow, defining all REST endpoints, request/response schemas, auth, validation, error codes, and environment variables.",
+  "scope": [
+    "REST API",
+    "authentication",
+    "authorization (RBAC)",
+    "patients endpoints",
+    "appointments endpoints",
+    "eligibility endpoints",
+    "clinics endpoints",
+    "users endpoints",
+    "jobs endpoints",
+    "notifications endpoints",
+    "settings endpoints",
+    "dashboard KPIs",
+    "claims endpoints",
+    "EOBs endpoints",
+    "recalls endpoints",
+    "agents endpoints",
+    "webhooks (OpenDental)",
+    "internal worker endpoint",
+    "Zod validation schemas",
+    "environment variables"
+  ],
+  "cross_refs": [
+    "server/middleware/validators.ts",
+    "server/config/index.ts"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Heuristic suggested DOC, but content is dominated by endpoint tables, request/response JSON schemas, validation rules, and error code contracts — strong SPEC signals. Reclassified as SPEC with high confidence."
+}

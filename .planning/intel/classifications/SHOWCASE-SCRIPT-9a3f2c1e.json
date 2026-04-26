@@ -1,0 +1,29 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/SHOWCASE-SCRIPT.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "DentalFlow Showcase Script for Ilyas",
+  "summary": "Step-by-step 15-20 minute demo walkthrough script for presenting DentalFlow's screens, role experiences, and automation flows to client Ilyas.",
+  "scope": [
+    "demo presentation",
+    "IT Admin dashboard",
+    "Staff Admin dashboard",
+    "Staff User dashboard",
+    "role switcher",
+    "patient lookup",
+    "patient detail",
+    "eligibility verification",
+    "recalls management",
+    "claims management",
+    "EOB retrieval",
+    "automation jobs",
+    "agent monitor",
+    "settings",
+    "notifications",
+    "interactive element checklist"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null
+}

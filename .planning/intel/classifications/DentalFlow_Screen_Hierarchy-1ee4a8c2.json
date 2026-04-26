@@ -1,0 +1,33 @@
+{
+  "source_path": "/Users/faisalidris/DentalAutomation/DentalFlow_Screen_Hierarchy.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "DentalFlow by NiftyByte — Screen Hierarchy & Navigation Map",
+  "summary": "Information architecture spec defining DentalFlow's routes, role-based navigation visibility, screen hierarchy, modal overlays, and navigation flow across IT Admin, Staff Admin, and Staff User roles.",
+  "scope": [
+    "routes",
+    "navigation",
+    "screen hierarchy",
+    "role-based access",
+    "global layout",
+    "modals and overlays",
+    "IT Admin",
+    "Staff Admin",
+    "Staff User",
+    "dashboard",
+    "patients",
+    "eligibility",
+    "recalls",
+    "claims",
+    "EOB",
+    "automations",
+    "agents",
+    "notifications",
+    "settings"
+  ],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}
