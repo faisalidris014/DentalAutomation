@@ -126,17 +126,19 @@ getClinicScope(user, requestedClinicId?): string | null
 | `GET /api/eligibility` | yes | yes | yes |
 | `POST /api/eligibility/verify` | yes | yes | yes |
 | `GET /api/eligibility/stats` | yes | yes | no |
-| `GET/POST /api/clinics` | yes | no | no |
+| `GET /api/clinics` | yes | yes | yes |
+| `POST /api/clinics` | yes | no | no |
 | `PUT /api/clinics/:id` | yes | no | no |
-| `GET/POST /api/users` | yes | no | no |
-| `PUT /api/users/:id` | yes | no | no |
+| `GET /api/clinics/:id/health` | yes | yes | no |
+| `GET/POST /api/users` | yes | yes | no |
+| `PUT /api/users/:id` | yes | yes | no |
 | `GET /api/jobs` | yes | yes | yes |
 | `GET /api/jobs/:id` | yes | yes | yes |
 | `POST /api/jobs/:id/cancel` | yes | yes | no |
 | `POST /api/jobs/:id/retry` | yes | yes | no |
 | `GET /api/notifications` | yes | yes | yes |
-| `PATCH /api/notifications/:id` | yes | yes | yes |
-| `GET /api/settings` | yes | yes | no |
+| `PUT /api/notifications/:id` | yes | yes | yes |
+| `GET /api/settings` | yes | yes | yes |
 | `PUT /api/settings` | yes | yes | no |
 | `GET /api/dashboard/kpis` | yes | yes | yes |
 | `POST /api/webhooks/opendental` | no auth (secret header) | | |

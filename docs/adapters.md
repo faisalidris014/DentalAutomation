@@ -306,6 +306,7 @@ Defined in `server/adapters/payer/types.ts`.
 | `testConnection()` | Verify connectivity. Returns `{ connected, error? }`. |
 | `checkEligibility(request)` | Run an eligibility check. Returns `EligibilityResult`. |
 | `getHealthStatus()` | Returns `{ status: 'healthy' \| 'degraded' \| 'down', lastCheck }`. |
+| `retrieveEOBs?(params)` | *Optional.* Retrieve EOB documents for a date range. Returns `RawEOBDocument[]`. |
 
 Properties:
 
@@ -314,6 +315,47 @@ Properties:
 | `payerName` | `string` | Human-readable payer name. |
 | `payerType` | `'medicaid' \| 'commercial'` | Determines processing rules. |
 | `supportedStates` | `string[]` (optional) | For Medicaid adapters: which states this adapter covers. |
+
+### EOB Retrieval Types
+
+The optional `retrieveEOBs(params)` method takes `{ dateFrom: string; dateTo: string; clinicNpi: string }` (all ISO dates / NPI string) and returns `RawEOBDocument[]`.
+
+**RawEOBDocument**
+
+| Field | Type | Required |
+|-------|------|----------|
+| `checkNumber` | `string` | yes |
+| `checkDate` | `string` (ISO date) | yes |
+| `checkAmount` | `number` | yes |
+| `payerName` | `string` | yes |
+| `receivedDate` | `string` (ISO date) | no |
+| `source` | `EOBSource` | yes |
+| `lineItems` | `RawEOBLineItem[]` | yes |
+| `rawData` | `unknown` | no |
+
+**RawEOBLineItem**
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `patientFirstName` | `string` | yes | Used for fuzzy patient matching |
+| `patientLastName` | `string` | yes | Used for fuzzy patient matching |
+| `patientDob` | `string` (ISO date) | no | Used to disambiguate fuzzy matches |
+| `patientPmsId` | `string` | no | If supplied, parser tries exact match first |
+| `procedureCode` | `string` | yes | CDT code |
+| `toothNumber` | `string` | no | |
+| `serviceDate` | `string` (ISO date) | yes | |
+| `fee` | `number` | yes | Billed amount |
+| `allowed` | `number` | yes | Carrier-allowed amount |
+| `paid` | `number` | yes | Insurance-paid amount |
+| `adjustment` | `number` | yes | Write-off (`fee - allowed`) |
+| `patientResponsibility` | `number` | yes | |
+| `denialCode` | `string` | no | e.g., `CO-4` |
+| `denialReason` | `string` | no | |
+| `claimPmsId` | `string` | no | If supplied, used to tighten claim match in triage |
+
+**EOBSource** -- `'edi_835' | 'portal_scrape' | 'manual_upload'`
+
+Adapters that do not implement `retrieveEOBs` are skipped during EOB sync jobs. The EOB engine only calls adapters whose payer config has `featuresEnabled.eob` set to `true` (see `server/services/eob/engine.ts`).
 
 ### Request and Result Types
 
@@ -360,6 +402,10 @@ Current mappings:
 | Delta Dental, MetLife, Cigna, Aetna, United Healthcare, Guardian, Humana, Principal, Ameritas, SunLife | `clearinghouse.dentalxchange` | commercial |
 | Minnesota Medicaid, Medical Assistance, DentaQuest, Health Partners Medicaid | `medicaid.minnesota` | medicaid |
 | Everything else | `manual_review` | unknown |
+
+### DentalXChange EOB Support
+
+The DentalXChange adapter (`server/adapters/payer/clearinghouse/dentalxchange.ts`) implements the optional `retrieveEOBs` method. The current implementation is a deterministic mock 835 generator suitable for the demo prototype — it produces 1–4 EOB documents per call with 1–3 line items each, ~10% denial rate, and amounts that span both auto-post-eligible (`paid <= $250`) and flagged ranges. Production deployment requires replacing the body of `retrieveEOBs` with real DentalXChange API calls and 835 EDI parsing; the surrounding parser, triage, and posting pipeline are production-ready.
 
 ### Adding a New Payer Adapter
 

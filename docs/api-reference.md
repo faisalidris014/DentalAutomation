@@ -325,16 +325,16 @@ The `status` parameter filters on `eligibilityResult`. The `payer` parameter fil
       "patientId": "uuid",
       "insuranceId": "uuid",
       "payerName": "Delta Dental",
-      "payerType": "dental",
-      "adapterUsed": "availity",
+      "payerType": "commercial",
+      "adapterUsed": "clearinghouse.dentalxchange",
       "trigger": "on_demand",
       "triggeredBy": "uuid",
       "status": "completed",
-      "eligibilityResult": "eligible",
+      "eligibilityResult": "active",
       "effectiveDate": "2025-01-01",
       "terminationDate": null,
       "managedCarePlan": null,
-      "dentalCoverage": { "...coverage details" },
+      "dentalCoverage": true,
       "resultDetails": { "...raw result" },
       "errorMessage": null,
       "writtenToPms": true,
@@ -832,15 +832,15 @@ Credentials are excluded from the response.
       "id": "uuid",
       "clinicId": "uuid",
       "payerName": "Delta Dental",
-      "payerType": "dental",
+      "payerType": "commercial",
       "state": "OR",
-      "adapterKey": "availity",
+      "adapterKey": "clearinghouse.dentalxchange",
       "portalUrl": "https://portal.deltadental.com",
       "isEnabled": true,
       "autoVerify": true,
       "timeoutMs": 30000,
       "maxRetries": 3,
-      "featuresEnabled": { "realtime_270": true },
+      "featuresEnabled": { "eligibility": true, "eob": true, "claims": true },
       "lastHealthCheck": "2025-04-22T12:00:00Z",
       "healthStatus": "healthy",
       "createdAt": "2025-01-01T00:00:00Z",
@@ -1064,6 +1064,87 @@ Non-`it_admin` users can only access EOBs within their clinic.
 
 ---
 
+#### POST /api/eobs/sync
+
+Trigger EOB retrieval from all enabled payer configs for a clinic. **Roles**: `it_admin`, `staff_admin`.
+
+**Request Body**:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `clinic_id` | uuid | no | Defaults to the caller's assigned clinic. Only effective for `it_admin`. |
+
+**Response** `202`:
+
+```json
+{
+  "data": { "...job record (jobType: eob_sync)" }
+}
+```
+
+Creates an `eob_sync` job that retrieves EOBs from all enabled payer adapters, parses them, runs triage rules, and auto-posts eligible records.
+
+**Errors**: `400` if no `clinic_id` can be resolved.
+
+---
+
+#### PUT /api/eobs/:id/review
+
+Approve or reject a flagged EOB after manual review. **Roles**: `it_admin`, `staff_admin`.
+
+**Request Body** (validated by `eobReviewSchema`):
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `action` | `"approve"` or `"reject"` | yes | `approve` posts to PMS; `reject` marks as `skipped`. |
+| `notes` | string | no | Free-text review notes. |
+| `clinic_id` | uuid | no | Only effective for `it_admin`. |
+
+**Response** `200`:
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "triageStatus": "manually_posted",
+    "reviewNotes": "Verified amounts match ERA",
+    "postedToPms": true,
+    "updatedAt": "2026-04-25T10:00:00Z"
+  }
+}
+```
+
+**Errors**: `404 NOT_FOUND`. `400` if the EOB is not in a reviewable state (`flagged_for_review`).
+
+---
+
+#### POST /api/eobs/:id/post
+
+Post an approved EOB to the PMS. Creates a ClaimPayment and ClaimProc records in OpenDental. **Roles**: `it_admin`, `staff_admin`.
+
+**Request Body**:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `clinic_id` | uuid | no | Only effective for `it_admin`. |
+
+**Response** `200`:
+
+```json
+{
+  "data": {
+    "success": true,
+    "pmsRecordId": "12345"
+  }
+}
+```
+
+On failure, `success` is `false` and an `error` field describes the issue.
+
+**Errors**: `404 NOT_FOUND`. `400` if the EOB has already been posted or is not in an approved/reviewable state.
+
+---
+
 ### Recalls
 
 #### GET /api/recalls
@@ -1238,7 +1319,7 @@ All request body validation uses [Zod](https://zod.dev/). Schemas are defined in
 | `updateSettingsSchema` | `PUT /settings` | `category`: min 1. `key`: min 1. `value`: any. `clinicId`: optional uuid, nullable. |
 | `updateNotificationSchema` | `PUT /notifications/:id` | `isRead`: optional boolean. `isDismissed`: optional boolean. |
 | `updatePayerConfigSchema` | `PUT /settings/payer-configs/:id` | `portalUrl`: valid URL. `timeoutMs`: positive int. `maxRetries`: 0-10. `featuresEnabled`: record of booleans. |
-| `eobReviewSchema` | EOB review (future) | `triageStatus`: enum (`auto_posted`, `flagged_for_review`, `manually_posted`, `skipped`). `reviewNotes`: optional. |
+| `eobReviewSchema` | `PUT /eobs/:id/review` | `action`: enum (`approve`, `reject`). `notes`: optional string. `clinic_id`: optional uuid. |
 | `verifyEligibilitySchema` | `POST /eligibility/verify` | `patientId`: uuid. `insuranceId`: uuid. `clinicId`: optional uuid. |
 
 ---

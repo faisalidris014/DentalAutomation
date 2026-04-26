@@ -6,21 +6,22 @@ DentalFlow uses a PostgreSQL-backed job queue for async operations. Jobs are sto
 
 ## Job Types
 
-There are 11 job types defined in `server/services/queue/types.ts`:
+There are 12 job types defined in `server/services/queue/types.ts`:
 
 | Job Type | Status | Description |
 |----------|--------|-------------|
 | `sync_patients` | Active | Syncs patient demographics from PMS to patients_cache |
 | `sync_insurance` | Active | Full sync: patients + insurance plans from PMS |
 | `sync_appointments` | Stub | Appointments queried live, no cache |
-| `sync_claims` | Stub | Claims sync -- Phase 2 |
+| `sync_claims` | Active | Syncs claims from PMS to claims_cache table (prerequisite for EOB triage) |
 | `eligibility_batch` | Active | Batch verification for all stale insurance in a clinic |
 | `eligibility_single` | Active | Single patient eligibility verification (usually webhook-triggered) |
 | `eligibility_recheck` | Active | Day-of-service recheck for patients with appointments today |
-| `eob_sync` | Stub | EOB retrieval -- Phase 3 |
-| `eob_post` | Stub | EOB auto-posting -- Phase 3 |
-| `eob_report` | Stub | Weekly EOB summary -- Phase 3 |
+| `eob_sync` | Active | Retrieves EOBs from payer adapters, parses, triages, and auto-posts eligible records |
+| `eob_post` | Active | Posts a specific EOB to PMS (uses `relatedEntityId` for the EOB record ID) |
+| `eob_report` | Active | Generates weekly EOB processing summary report (counts by status, dollars posted, flagged items) |
 | `webhook_process` | Active | Webhook event acknowledgment (real work done by other job types) |
+| `recall_reminder` | Active | Queue a recall reminder for an overdue patient (triggered from recalls UI) |
 
 ## Job Lifecycle
 

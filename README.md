@@ -134,5 +134,5 @@ Additional design docs:
 ## Project Status
 
 - **Phase 1** (Complete): Auth, patient/insurance sync, eligibility verification, job queue, notifications, audit logging
-- **Phase 2** (Stubbed): Claims sync, appointment sync, advanced reporting
-- **Phase 3** (Stubbed): EOB retrieval, auto-post, triage, weekly reports
+- **Phase 2** (Complete): Claims sync, appointment sync, advanced reporting
+- **Phase 3** (Complete, mock clearinghouse): EOB retrieval, parser, 6-rule triage, auto-post, manual review, weekly reports. The DentalXChange `retrieveEOBs` adapter generates deterministic 835 documents for the demo; swap in real clearinghouse calls before production.
