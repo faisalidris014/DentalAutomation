@@ -37,7 +37,40 @@ export interface EligibilityResult {
   errorMessage?: string;
 }
 
-// ─── Payer Adapter Interface ───────────��────────────────────────────────────
+// ─── EOB Types ─────────────────────────────────────────────────────────────
+
+export type EOBSource = 'edi_835' | 'portal_scrape' | 'manual_upload';
+
+export interface RawEOBLineItem {
+  patientFirstName: string;
+  patientLastName: string;
+  patientDob?: string;
+  patientPmsId?: string;
+  procedureCode: string;
+  toothNumber?: string;
+  serviceDate: string;
+  fee: number;
+  allowed: number;
+  paid: number;
+  adjustment: number;
+  patientResponsibility: number;
+  denialCode?: string;
+  denialReason?: string;
+  claimPmsId?: string;
+}
+
+export interface RawEOBDocument {
+  checkNumber: string;
+  checkDate: string;
+  checkAmount: number;
+  payerName: string;
+  receivedDate?: string;
+  source: EOBSource;
+  lineItems: RawEOBLineItem[];
+  rawData?: unknown;
+}
+
+// ─── Payer Adapter Interface ────────────────────────────────────────────────
 
 export interface IPayerAdapter {
   readonly payerName: string;
@@ -49,6 +82,12 @@ export interface IPayerAdapter {
   checkEligibility(request: EligibilityRequest): Promise<EligibilityResult>;
 
   getHealthStatus(): Promise<{ status: 'healthy' | 'degraded' | 'down'; lastCheck: string }>;
+
+  retrieveEOBs?(params: {
+    dateFrom: string;
+    dateTo: string;
+    clinicNpi: string;
+  }): Promise<RawEOBDocument[]>;
 }
 
 // ─── Errors ────��────────────────────────────────────────────────────────────

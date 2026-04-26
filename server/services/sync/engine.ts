@@ -1,8 +1,8 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../../db/connection';
-import { clinics, patientsCache, insuranceCache } from '../../db/schema';
+import { clinics, patientsCache, insuranceCache, claimsCache } from '../../db/schema';
 import { getAdapter } from '../../adapters/pms/registry';
-import type { CanonicalPatient, CanonicalInsurancePlan } from '../../adapters/pms/types';
+import type { CanonicalPatient, CanonicalInsurancePlan, CanonicalClaim } from '../../adapters/pms/types';
 import { diffRecords, hashRecord } from './differ';
 
 export interface SyncJobResult {
@@ -214,6 +214,117 @@ export async function syncInsurance(clinicId: string, patientIds: string[]): Pro
     inserted,
     updated,
     unchanged: 0,
+    errors,
+    syncTimestamp: now.toISOString(),
+  };
+}
+
+export async function syncClaims(clinicId: string): Promise<SyncJobResult> {
+  const clinic = await getClinic(clinicId);
+  if (!clinic) throw new Error(`Clinic ${clinicId} not found`);
+
+  const adapter = getAdapter(clinic);
+
+  // Get existing claims for this clinic
+  const existingClaims = await db
+    .select({
+      pmsClaimId: claimsCache.pmsClaimId,
+      status: claimsCache.status,
+      amountBilled: claimsCache.amountBilled,
+      amountPaid: claimsCache.amountPaid,
+    })
+    .from(claimsCache)
+    .where(eq(claimsCache.clinicId, clinicId));
+
+  const existingMap = new Map(
+    existingClaims
+      .filter((c) => c.pmsClaimId)
+      .map((c) => [
+        c.pmsClaimId!,
+        { hash: hashRecord({ status: c.status, amountBilled: c.amountBilled, amountPaid: c.amountPaid }) },
+      ]),
+  );
+
+  // Pull claims from PMS
+  const syncResult = await adapter.getClaims({});
+  const incoming = syncResult.items;
+
+  const diff = diffRecords<CanonicalClaim>(
+    existingMap,
+    incoming,
+    (c) => c.pmsId,
+    (c) => hashRecord({ status: c.status, amountBilled: String(c.amountBilled), amountPaid: String(c.amountPaid) }),
+  );
+
+  // Build a map of pmsPatientId → internal patientId for FK resolution
+  const patients = await db
+    .select({ id: patientsCache.id, pmsPatientId: patientsCache.pmsPatientId })
+    .from(patientsCache)
+    .where(eq(patientsCache.clinicId, clinicId));
+  const patientLookup = new Map(patients.map((p) => [p.pmsPatientId, p.id]));
+
+  let errors = 0;
+  const now = new Date();
+
+  // Insert new claims
+  if (diff.inserts.length > 0) {
+    try {
+      await db.insert(claimsCache).values(
+        diff.inserts.map((c) => ({
+          clinicId,
+          patientId: patientLookup.get(c.patientPmsId) ?? null,
+          pmsClaimId: c.pmsId,
+          payerName: c.carrierName,
+          claimType: c.claimType,
+          status: c.status,
+          amountBilled: String(c.amountBilled),
+          amountPaid: String(c.amountPaid),
+          dateSubmitted: c.dateSubmitted ?? null,
+          dateReceived: c.dateReceived ?? null,
+          procedures: c.procedures,
+          lastSyncedAt: now,
+        })),
+      );
+    } catch (err) {
+      console.error('[Sync] Claims insert error:', err);
+      errors += diff.inserts.length;
+    }
+  }
+
+  // Update existing claims
+  for (const c of diff.updates) {
+    try {
+      await db
+        .update(claimsCache)
+        .set({
+          patientId: patientLookup.get(c.patientPmsId) ?? undefined,
+          payerName: c.carrierName,
+          claimType: c.claimType,
+          status: c.status,
+          amountBilled: String(c.amountBilled),
+          amountPaid: String(c.amountPaid),
+          dateSubmitted: c.dateSubmitted ?? null,
+          dateReceived: c.dateReceived ?? null,
+          procedures: c.procedures,
+          lastSyncedAt: now,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(claimsCache.clinicId, clinicId),
+            eq(claimsCache.pmsClaimId, c.pmsId),
+          ),
+        );
+    } catch (err) {
+      console.error(`[Sync] Claims update error for claim ${c.pmsId}:`, err);
+      errors++;
+    }
+  }
+
+  return {
+    inserted: diff.inserts.length - errors,
+    updated: diff.updates.length,
+    unchanged: diff.unchanged.length,
     errors,
     syncTimestamp: now.toISOString(),
   };

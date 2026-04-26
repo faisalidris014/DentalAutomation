@@ -1,10 +1,12 @@
 import type { Job } from '../../db/schema';
 import type { ExecutionLogEntry, JobType } from './types';
 import { getNextJob, updateJobStatus, appendToExecutionLog } from './manager';
-import { syncPatients, syncInsurance, fullSync } from '../sync/engine';
+import { syncPatients, syncInsurance, syncClaims, fullSync } from '../sync/engine';
 import { runBatchVerification } from '../eligibility/batch';
 import { runDayOfServiceRecheck } from '../eligibility/recheck';
 import { verifyPatientEligibility } from '../eligibility/engine';
+import { syncEobs, autoPostEligibleEobs, postEobToPms } from '../eob/engine';
+import { generateWeeklyReport } from '../eob/reporter';
 
 type JobHandler = (job: Job) => Promise<void>;
 
@@ -31,10 +33,12 @@ const jobHandlers: Partial<Record<JobType, JobHandler>> = {
   },
 
   sync_claims: async (job) => {
-    // Claims sync — placeholder for Phase 2+
+    const result = await syncClaims(job.clinicId);
     await updateJobStatus(job.id, 'completed', {
       completedAt: new Date(),
-      result: { message: 'Claims sync not yet implemented' },
+      processedItems: result.inserted + result.updated,
+      failedItems: result.errors,
+      result,
     });
   },
 
@@ -97,25 +101,41 @@ const jobHandlers: Partial<Record<JobType, JobHandler>> = {
     });
   },
 
-  // Phase 3 stubs
   eob_sync: async (job) => {
+    const result = await syncEobs(job.clinicId);
+    // Auto-post eligible records after sync
+    const posted = await autoPostEligibleEobs(job.clinicId);
     await updateJobStatus(job.id, 'completed', {
       completedAt: new Date(),
-      result: { message: 'EOB sync not yet implemented — Phase 3' },
+      processedItems: result.totalRetrieved,
+      failedItems: result.errors,
+      result: { ...result, autoPostedToPms: posted },
     });
   },
 
   eob_post: async (job) => {
+    if (!job.relatedEntityId) {
+      await updateJobStatus(job.id, 'completed', {
+        completedAt: new Date(),
+        result: { error: 'No EOB ID provided' },
+      });
+      return;
+    }
+    const result = await postEobToPms(job.relatedEntityId, job.clinicId);
     await updateJobStatus(job.id, 'completed', {
       completedAt: new Date(),
-      result: { message: 'EOB post not yet implemented — Phase 3' },
+      processedItems: result.success ? 1 : 0,
+      failedItems: result.success ? 0 : 1,
+      result,
     });
   },
 
   eob_report: async (job) => {
+    const report = await generateWeeklyReport(job.clinicId);
     await updateJobStatus(job.id, 'completed', {
       completedAt: new Date(),
-      result: { message: 'EOB report not yet implemented — Phase 3' },
+      processedItems: report.totalProcessed,
+      result: report,
     });
   },
 
