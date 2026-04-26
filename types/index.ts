@@ -157,6 +157,12 @@ export interface EOB {
   totalPatientResp: number;
   totalAdjustment: number;
   lineItems: EOBLineItem[];
+  triageStatus: string;
+  triageReason: string | null;
+  postedToPms: boolean;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewNotes: string | null;
 }
 
 export interface JobLogEntry {

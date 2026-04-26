@@ -210,6 +210,12 @@ export function mapApiEobToEOB(api: ApiEob): EOB {
     totalPatientResp: toNum(api.totalPatientResp),
     totalAdjustment: toNum(api.totalAdjusted),
     lineItems,
+    triageStatus: api.triageStatus ?? 'pending',
+    triageReason: api.triageReason ?? null,
+    postedToPms: api.postedToPms ?? false,
+    reviewedBy: api.reviewedBy ?? null,
+    reviewedAt: api.reviewedAt ?? null,
+    reviewNotes: api.reviewNotes ?? null,
   };
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileSpreadsheet, Download, RefreshCw, Clock, Filter } from 'lucide-react';
+import { FileSpreadsheet, RefreshCw, Clock, Filter, CheckCircle, XCircle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
@@ -14,15 +14,35 @@ import type { EOB } from '@/types';
 import type { PaginatedResponse, ApiEob } from '@/types/api';
 
 const payerFilters = ['All', 'Delta Dental', 'Cigna', 'MetLife'];
+const triageFilters = ['All Statuses', 'Pending', 'Auto-Posted', 'Flagged', 'Posted', 'Skipped'];
+
+const triageStatusMap: Record<string, string> = {
+  'Pending': 'pending',
+  'Auto-Posted': 'auto_post',
+  'Flagged': 'flagged_for_review',
+  'Posted': 'manually_posted',
+  'Skipped': 'skipped',
+};
+
+function getTriageBadge(status: string) {
+  switch (status) {
+    case 'auto_post': return { label: 'Auto-Post', variant: 'green' as const };
+    case 'flagged_for_review': return { label: 'Flagged', variant: 'red' as const };
+    case 'manually_posted': return { label: 'Posted', variant: 'cyan' as const };
+    case 'skipped': return { label: 'Skipped', variant: 'default' as const };
+    default: return { label: 'Pending', variant: 'amber' as const };
+  }
+}
 
 export default function EOBPage() {
   const [eobs, setEobs] = useState<EOB[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPayer, setSelectedPayer] = useState('All');
+  const [selectedTriage, setSelectedTriage] = useState('All Statuses');
   const [selectedEOB, setSelectedEOB] = useState<EOB | null>(null);
   const [syncing, setSyncing] = useState(false);
-  const [toastVisible, setToastVisible] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [syncLabel, setSyncLabel] = useState('2h ago');
 
@@ -51,21 +71,33 @@ export default function EOBPage() {
     return () => clearInterval(id);
   }, [lastSyncTime]);
 
-  const filtered = selectedPayer === 'All'
-    ? eobs
-    : eobs.filter(e => e.payerName === selectedPayer);
+  const filtered = eobs.filter(e => {
+    if (selectedPayer !== 'All' && e.payerName !== selectedPayer) return false;
+    if (selectedTriage !== 'All Statuses' && e.triageStatus !== triageStatusMap[selectedTriage]) return false;
+    return true;
+  });
 
   const handleSync = () => {
     setSyncing(true);
-    setTimeout(() => {
-      setSyncing(false);
-      setLastSyncTime(new Date());
-    }, 2000);
+    api.post('/api/eobs/sync', {})
+      .then(() => {
+        setLastSyncTime(new Date());
+        // Refetch after a brief delay to allow job to process
+        setTimeout(fetchEobs, 3000);
+      })
+      .catch(() => setError('Failed to trigger EOB sync.'))
+      .finally(() => setSyncing(false));
   };
 
-  const handleDownload = () => {
-    setToastVisible(true);
-    setTimeout(() => setToastVisible(false), 3000);
+  const handleReview = (eobId: string, action: 'approve' | 'reject') => {
+    setReviewing(true);
+    api.put(`/api/eobs/${eobId}/review`, { action })
+      .then(() => {
+        setSelectedEOB(null);
+        fetchEobs();
+      })
+      .catch(() => setError(`Failed to ${action} EOB.`))
+      .finally(() => setReviewing(false));
   };
 
   return (
@@ -103,6 +135,14 @@ export default function EOBPage() {
           </NavPill>
         ))}
       </div>
+      <div className="eob-filters">
+        <FileSpreadsheet size={14} style={{ color: 'var(--text-tertiary)' }} />
+        {triageFilters.map(f => (
+          <NavPill key={f} active={selectedTriage === f} onClick={() => setSelectedTriage(f)}>
+            {f}
+          </NavPill>
+        ))}
+      </div>
 
       <Card padding="0">
         <table className="eob-table">
@@ -113,10 +153,9 @@ export default function EOBPage() {
               <th>Patient</th>
               <th>Check #</th>
               <th>Billed</th>
-              <th>Allowed</th>
               <th>Paid</th>
               <th>Patient Resp</th>
-              <th></th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -127,14 +166,9 @@ export default function EOBPage() {
                 <td>{eob.patientName}</td>
                 <td className="mono">{eob.checkNumber}</td>
                 <td className="mono">{formatCurrency(eob.totalBilled)}</td>
-                <td className="mono">{formatCurrency(eob.totalAllowed)}</td>
                 <td className="mono" style={{ color: 'var(--green)' }}>{formatCurrency(eob.totalPaid)}</td>
                 <td className="mono">{formatCurrency(eob.totalPatientResp)}</td>
-                <td>
-                  <button className="btn-icon" onClick={e => { e.stopPropagation(); handleDownload(); }} title="Download PDF">
-                    <Download size={14} />
-                  </button>
-                </td>
+                <td><Badge variant={getTriageBadge(eob.triageStatus).variant}>{getTriageBadge(eob.triageStatus).label}</Badge></td>
               </tr>
             ))}
           </tbody>
@@ -218,18 +252,49 @@ export default function EOBPage() {
                 <span className="mono">{formatCurrency(selectedEOB.totalAdjustment)}</span>
               </div>
             </div>
+
+            <div className="eob-detail__status">
+              <div className="eob-detail__meta-item">
+                <span className="label">Triage Status</span>
+                <Badge variant={getTriageBadge(selectedEOB.triageStatus).variant}>{getTriageBadge(selectedEOB.triageStatus).label}</Badge>
+              </div>
+              {selectedEOB.triageReason && (
+                <div className="eob-detail__meta-item" style={{ gridColumn: '1 / -1' }}>
+                  <span className="label">Reason</span>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--red)' }}>{selectedEOB.triageReason}</span>
+                </div>
+              )}
+              {selectedEOB.postedToPms && (
+                <div className="eob-detail__meta-item">
+                  <span className="label">PMS Status</span>
+                  <span style={{ color: 'var(--green)', fontSize: 'var(--text-sm)' }}>Posted to PMS</span>
+                </div>
+              )}
+            </div>
+
+            {selectedEOB.triageStatus === 'flagged_for_review' && (
+              <div className="eob-detail__actions">
+                <button
+                  className="btn-approve"
+                  disabled={reviewing}
+                  onClick={() => handleReview(selectedEOB.id, 'approve')}
+                >
+                  <CheckCircle size={14} />
+                  {reviewing ? 'Processing...' : 'Approve & Post to PMS'}
+                </button>
+                <button
+                  className="btn-reject"
+                  disabled={reviewing}
+                  onClick={() => handleReview(selectedEOB.id, 'reject')}
+                >
+                  <XCircle size={14} />
+                  {reviewing ? 'Processing...' : 'Reject'}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Modal>
-
-      {toastVisible && (
-        <div className="toast-container">
-          <div className="toast">
-            <Download size={14} style={{ color: 'var(--green)' }} />
-            EOB PDF downloaded successfully
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
         .eob-page {
@@ -418,6 +483,71 @@ export default function EOBPage() {
         .retry-btn:hover {
           background: rgba(255, 255, 255, 0.12);
           border-color: var(--border-hover);
+        }
+        .eob-detail__status {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--space-md);
+          margin-top: var(--space-lg);
+          padding: var(--space-md);
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border);
+        }
+        .eob-detail__actions {
+          display: flex;
+          gap: var(--space-md);
+          margin-top: var(--space-lg);
+          padding-top: var(--space-lg);
+          border-top: 1px solid var(--border);
+        }
+        .btn-approve {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex: 1;
+          justify-content: center;
+          padding: 10px 16px;
+          background: rgba(34, 197, 94, 0.1);
+          border: 1px solid rgba(34, 197, 94, 0.3);
+          border-radius: var(--radius-md);
+          color: var(--green);
+          font-size: var(--text-sm);
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        .btn-approve:hover:not(:disabled) {
+          background: rgba(34, 197, 94, 0.2);
+          border-color: rgba(34, 197, 94, 0.5);
+        }
+        .btn-approve:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .btn-reject {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex: 1;
+          justify-content: center;
+          padding: 10px 16px;
+          background: rgba(248, 113, 113, 0.1);
+          border: 1px solid rgba(248, 113, 113, 0.3);
+          border-radius: var(--radius-md);
+          color: var(--red);
+          font-size: var(--text-sm);
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--transition-fast);
+        }
+        .btn-reject:hover:not(:disabled) {
+          background: rgba(248, 113, 113, 0.2);
+          border-color: rgba(248, 113, 113, 0.5);
+        }
+        .btn-reject:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
       `}</style>
       <style jsx global>{`
