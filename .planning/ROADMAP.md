@@ -98,7 +98,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A clinic-level config flag in `payer_configs` selects between the mock generator (dev) and the real clearinghouse adapter (production) without touching application code.
   4. An end-to-end smoke test on Muath's pilot data pulls a real EOB → parses it → triages → either auto-posts or flags → raises the appropriate notification.
   5. A grep across the production code path returns zero references to the deterministic mock generator (mock lives only behind the dev/local flag).
-**Plans**: TBD
+**Plans:** 5 plans
+- [ ] 03.5-01-PLAN.md — Wave 0 test infra + 835 fixtures + DXC partner enrollment tracker
+- [ ] 03.5-02-PLAN.md — Adapter dispatch refactor (mock-vs-real) + registry credentials decryption
+- [ ] 03.5-03-PLAN.md — x12-parser install + edi835 parser/mapper with PHI-safe errors and BPR/CLP reconciliation
+- [ ] 03.5-04-PLAN.md — RealClearinghouseEOBSource HTTP client + eob_sync_child decomposition + Vercel maxDuration
+- [ ] 03.5-05-PLAN.md — Smoke test on Muath pilot data + production-grep gate + docs sync
 
 ### Phase 5: Scope & Triage Reconciliation
 
@@ -150,7 +155,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.5 → 4 → 5 → 6 → 7. 
 | 2. PMS Sync & Eligibility Engine | v1.0 Demo | shipped | Complete | 2026 (commits 1d41aaa, 7dbd8c1) |
 | 3. EOB Engine & Triage | v1.0 Demo | shipped | Complete | 2026 (commit 083b892) |
 | 4. Frontend Wiring & Prototype UI | v1.0 Demo | shipped | Complete | 2026 (commits 7dbd8c1, 7db2a11, 713efa9) |
-| 3.5. Real Clearinghouse EOB Ingestion | v1.1 Pilot | 0/TBD | Not started | - |
+| 3.5. Real Clearinghouse EOB Ingestion | v1.1 Pilot | 0/5 | Not started | - |
 | 5. Scope & Triage Reconciliation | v1.1 Pilot | 0/TBD | Not started | - |
 | 6. HIPAA Hardening | v1.1 Pilot | 0/TBD | Not started | - |
 | 7. Pilot Production Deployment | v1.1 Pilot | 0/TBD | Not started | - |
