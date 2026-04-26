@@ -31,9 +31,14 @@ import {
 export class OpenDentalAdapter implements IPMSAdapter {
   readonly pmsType = 'opendental';
   private client: OpenDentalClient;
+  private isMockMode: boolean;
 
   constructor(config: OpenDentalConfig) {
     this.client = new OpenDentalClient(config);
+    this.isMockMode =
+      process.env.PMS_MOCK_MODE === 'true' ||
+      config.developerKey === 'placeholder' ||
+      config.customerKey === 'placeholder';
   }
 
   async testConnection(): Promise<{ connected: boolean; version?: string; error?: string }> {
@@ -226,6 +231,14 @@ export class OpenDentalAdapter implements IPMSAdapter {
       denialCode?: string;
     }[];
   }): Promise<WriteResult> {
+    if (this.isMockMode) {
+      const mockId = `MOCK-${Date.now()}`;
+      console.log(
+        `[PMS-MOCK] OpenDental.postInsurancePayment short-circuited — check=${params.checkNumber} amount=${params.checkAmount} lineItems=${params.lineItems.length} pmsRecordId=${mockId}`,
+      );
+      return { success: true, pmsRecordId: mockId };
+    }
+
     try {
       // Step 1: Create the claim payment record
       const payment = await this.client.post<{ ClaimPaymentNum: number }>('/claimpayments', {

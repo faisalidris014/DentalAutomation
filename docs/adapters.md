@@ -155,6 +155,22 @@ Files in `server/adapters/pms/opendental/`:
 - `remote` -- OpenDental cloud API. 5s read throttle, 1s write throttle, 100 items per page.
 - `local` / `service` -- Self-hosted. No throttling, 1000 items per page.
 
+### Development Mock Mode
+
+`OpenDentalAdapter` ships with a built-in mock mode that short-circuits the write path so dev environments can exercise the EOB auto-post flow without real OpenDental credentials. Mock mode is **enabled automatically** when any of the following is true:
+
+- `process.env.PMS_MOCK_MODE === 'true'`
+- `clinic.pmsConfig.developer_key === 'placeholder'`
+- `clinic.pmsConfig.customer_key === 'placeholder'`
+
+The seed clinic (`server/db/seed.ts`) ships with both keys set to `'placeholder'`, so a freshly seeded local DB falls into mock mode out of the box.
+
+**What it does:** `postInsurancePayment()` returns `{ success: true, pmsRecordId: 'MOCK-<timestamp>' }` and logs a `[PMS-MOCK]` line instead of calling `https://api.opendental.com/api/v1/claimpayments`. The EOB engine treats this as a successful post and updates `eob_records.posted_to_pms`, `posted_at`, and `pms_claim_payment_id` normally.
+
+**What it does *not* do:** read methods (`getPatients`, `getClaims`, etc.) still hit the real API. Mock mode only intercepts the insurance payment write — the only write that affects EOB auto-post verification today. If you add new write methods to the adapter, decide explicitly whether they should respect `isMockMode` and add the same guard pattern at the top of the method.
+
+**Production:** real `developer_key` / `customer_key` values (and `PMS_MOCK_MODE` unset / `false`) deactivate mock mode. The placeholder check is a safe fallback — production-grade encrypted credentials never decrypt to the literal string `'placeholder'`.
+
 ### Adding a New PMS Adapter
 
 Use OpenDental as a reference. The steps:
