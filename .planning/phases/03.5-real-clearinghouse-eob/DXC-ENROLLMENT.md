@@ -1,6 +1,6 @@
 ---
 status: open
-owner: AWAITING USER INPUT
+owner: Faisal
 opened: 2026-04-26
 sandbox_creds_received: false
 prod_creds_received: false
@@ -25,23 +25,23 @@ fallback: "Switch to Stedi (RESEARCH.md §Open Question 6) — JSON-only respons
 
 ## Owner Assignment
 
-The named owner is responsible for:
+**Owner: Faisal** (technical lead — driving integration discussions and partner conversation)
+
+The owner is responsible for:
 1. Creating or signing into the DXC partner account on `developer.dentalxchange.com`
 2. Requesting access to the **XConnect Payment API** (the ERA / 835 retrieval surface)
 3. Driving the conversation with DXC's partner team to capture the required information below
 4. Storing credentials in 1Password (NEVER in git, NEVER in plans/tickets)
 5. Updating this tracker with status changes and the date received
 
-Assign exactly one of:
-- **Faisal** (technical lead, can drive integration discussions)
+Alternates if Faisal becomes unavailable:
 - **Sami** (NiftyByte co-founder, owns DXC business relationship)
 - **Muath ops** (pilot clinic — already has a DXC account, fastest path to "is this clinic enrolled?")
-
-Owner field above must be replaced before this tracker is considered active.
 
 ## Status Log
 
 - 2026-04-26 — Tracker created during Phase 3.5 Plan 01 execution. Owner pending user assignment. Enrollment not yet requested.
+- 2026-04-26 — Owner assigned: **Faisal**. Tracker now active. DXC partner conversation NOT yet initiated; sandbox/prod URLs, auth scheme, response format, and per-payer ERA enrollment status all remain pending until partner call lands.
 
 (Append a new dated line for every status change.)
 
