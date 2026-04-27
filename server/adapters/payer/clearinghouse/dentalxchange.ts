@@ -1,4 +1,31 @@
 import type { IPayerAdapter, EligibilityRequest, EligibilityResult, RawEOBDocument } from '../types';
+import type { IClearinghouseEOBSource } from './source-types';
+import { MockEOBSource } from './dentalxchange-source-mock';
+import { RealClearinghouseEOBSource } from './dentalxchange-source-real';
+import { simpleHash } from './utils';
+
+// ─── Credentials Shape (RESEARCH.md Pitfall 6) ──────────────────────────────
+
+/**
+ * Shape of the decrypted DentalXChange credentials blob held in
+ * `payer_configs.credentials`. Two on-disk shapes exist:
+ *   - Legacy: a bare encrypted string → after decrypt, treated as
+ *     `{ eligibility: { apiKey: <plaintext> } }`.
+ *   - New: an encrypted JSON blob → after decrypt + JSON.parse, conforms to
+ *     this interface directly.
+ *
+ * Both shapes are normalized into this interface by
+ * `decryptDXCCredentials()` in `payer/registry.ts`.
+ */
+export interface DXCCredentialsBlob {
+  eligibility?: { apiKey: string };
+  payment?: { apiKey: string; baseUrl?: string };
+}
+
+export interface DentalXChangeAdapterOptions {
+  eobMode?: 'mock' | 'sandbox' | 'production';
+  credentials?: DXCCredentialsBlob | null;
+}
 
 // ─── Benefit Templates Per Carrier ──────────────────────────────────────────
 
@@ -39,24 +66,55 @@ const DEFAULT_TEMPLATE: BenefitTemplate = {
   coveragePercentages: { preventive: 100, basic: 80, major: 50, ortho: 0 },
 };
 
-// ─── Deterministic Hash for Variety ─────────────────────────────────────────
-
-function simpleHash(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash);
-}
-
 // ─── Adapter ────────────────────────────────────────────────────────────────
 
 export class DentalXChangeAdapter implements IPayerAdapter {
   readonly payerName: string;
   readonly payerType = 'commercial' as const;
+  private readonly eobSource: IClearinghouseEOBSource;
 
-  constructor(payerName: string) {
+  constructor(payerName: string, opts?: DentalXChangeAdapterOptions) {
     this.payerName = payerName;
+    const mode = this.resolveMode(opts);
+    this.eobSource = mode === 'mock'
+      ? new MockEOBSource(payerName)
+      : new RealClearinghouseEOBSource({
+          payerName,
+          env: mode,
+          credentials: opts?.credentials ?? null,
+        });
+  }
+
+  /**
+   * Resolve the EOB source mode given constructor options + process env.
+   *
+   * Precedence (per RESEARCH.md §"Mock-vs-real dispatch" + Pitfall 1):
+   *   1. `process.env.PAYER_MOCK_MODE === 'true'` → ALWAYS mock (D-015 precedent)
+   *   2. credentials missing or `'placeholder'` → mock (warns when production was
+   *      explicitly requested but no real credentials are available)
+   *   3. explicit `opts.eobMode` → honor it
+   *   4. default → 'production' (the dispatcher only reaches this branch when
+   *      real credentials are present; safe default is to use them)
+   *
+   * Note: the `featuresEnabled.eob === false` short-circuit lives in
+   * `server/services/eob/engine.ts:54` and runs BEFORE `getPayerAdapter()` is
+   * called. The adapter itself does not inspect that flag — by the time we're
+   * here, the engine has already decided EOB sync should run.
+   */
+  private resolveMode(opts?: DentalXChangeAdapterOptions): 'mock' | 'sandbox' | 'production' {
+    if (process.env.PAYER_MOCK_MODE === 'true') return 'mock';
+
+    const apiKey = opts?.credentials?.payment?.apiKey ?? opts?.credentials?.eligibility?.apiKey;
+    if (!apiKey || apiKey === 'placeholder') {
+      if (opts?.eobMode && opts.eobMode !== 'mock') {
+        console.warn(
+          `[DXC] eobMode=${opts.eobMode} requested but no real credentials available — falling back to mock`,
+        );
+      }
+      return 'mock';
+    }
+
+    return opts?.eobMode ?? 'production';
   }
 
   async testConnection(): Promise<{ connected: boolean; error?: string }> {
@@ -144,77 +202,6 @@ export class DentalXChangeAdapter implements IPayerAdapter {
     dateTo: string;
     clinicNpi: string;
   }): Promise<RawEOBDocument[]> {
-    // MOCK: deterministic 835 EDI generator for the demo prototype.
-    // Replace with the real DentalXChange 835 remittance API for production.
-    // See docs/adapters.md for the IPayerAdapter contract this satisfies.
-    await new Promise((r) => setTimeout(r, 300));
-
-    const carrierName = this.payerName;
-    const hash = simpleHash(`${carrierName}-${params.dateFrom}-${params.clinicNpi}`);
-
-    // Generate deterministic but varied EOB documents
-    const eobCount = 1 + (hash % 4); // 1-4 EOBs per retrieval
-    const documents: RawEOBDocument[] = [];
-
-    for (let i = 0; i < eobCount; i++) {
-      const itemHash = simpleHash(`${hash}-${i}`);
-      const lineItemCount = 1 + (itemHash % 3); // 1-3 line items per EOB
-      const checkDate = params.dateFrom;
-      const lineItems = [];
-
-      let checkTotal = 0;
-
-      for (let j = 0; j < lineItemCount; j++) {
-        const ljHash = simpleHash(`${itemHash}-line-${j}`);
-        const procedures = ['D0120', 'D0274', 'D1110', 'D2392', 'D2740', 'D7140'];
-        const procCode = procedures[ljHash % procedures.length];
-        const fee = 50 + (ljHash % 500);
-        const coveragePercent = procCode.startsWith('D01') ? 100
-          : procCode.startsWith('D11') ? 80
-          : procCode.startsWith('D2') ? 50
-          : 80;
-        const allowed = Math.round(fee * 0.85 * 100) / 100;
-        const paid = Math.round(allowed * (coveragePercent / 100) * 100) / 100;
-        const adjustment = Math.round((fee - allowed) * 100) / 100;
-        const patientResp = Math.round((allowed - paid) * 100) / 100;
-
-        // ~10% chance of denial
-        const hasDenial = ljHash % 10 === 0;
-
-        checkTotal += paid;
-
-        lineItems.push({
-          patientFirstName: ['Sarah', 'Michael', 'James', 'Emily', 'Robert'][ljHash % 5],
-          patientLastName: ['Johnson', 'Thompson', 'Davis', 'Martinez', 'Wilson'][ljHash % 5],
-          patientDob: `198${ljHash % 10}-0${1 + (ljHash % 9)}-${10 + (ljHash % 19)}`,
-          procedureCode: procCode,
-          serviceDate: params.dateFrom,
-          fee,
-          allowed: hasDenial ? 0 : allowed,
-          paid: hasDenial ? 0 : paid,
-          adjustment: hasDenial ? fee : adjustment,
-          patientResponsibility: hasDenial ? 0 : patientResp,
-          denialCode: hasDenial ? 'CO-4' : undefined,
-          denialReason: hasDenial ? 'Procedure code inconsistent with modifier' : undefined,
-        });
-      }
-
-      documents.push({
-        checkNumber: `${carrierName.substring(0, 3).toUpperCase()}-${100000 + itemHash % 900000}`,
-        checkDate,
-        checkAmount: Math.round(checkTotal * 100) / 100,
-        payerName: carrierName,
-        receivedDate: new Date().toISOString().split('T')[0],
-        source: 'edi_835',
-        lineItems,
-        rawData: {
-          transactionId: `835-${Date.now()}-${i}`,
-          carrier: carrierName,
-          npi: params.clinicNpi,
-        },
-      });
-    }
-
-    return documents;
+    return this.eobSource.fetch(params);
   }
 }
