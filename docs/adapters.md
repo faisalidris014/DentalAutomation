@@ -423,6 +423,22 @@ Current mappings:
 
 The DentalXChange adapter (`server/adapters/payer/clearinghouse/dentalxchange.ts`) implements the optional `retrieveEOBs` method. The current implementation is a deterministic mock 835 generator suitable for the demo prototype — it produces 1–4 EOB documents per call with 1–3 line items each, ~10% denial rate, and amounts that span both auto-post-eligible (`paid <= $250`) and flagged ranges. Production deployment requires replacing the body of `retrieveEOBs` with real DentalXChange API calls and 835 EDI parsing; the surrounding parser, triage, and posting pipeline are production-ready.
 
+#### 835 EDI Test Fixtures
+
+Anonymized 835 ERA samples used by the EDI parser/mapper unit tests live in
+`server/adapters/payer/clearinghouse/__fixtures__/`. Seven fixtures cover the
+scenarios the production parser must handle: generic single-CLP, Delta Dental
+(multi-claim), MetLife (denial), Cigna (copay), non-default delimiters, denial
+with multiple CAS segments, and PLB takeback.
+
+**Anonymization is mandatory** before any 835 sample is committed to this repo.
+The full recipe — field-by-field rules, the approved-numeric-values allow-list,
+and the verify gate — is documented in
+[`server/adapters/payer/clearinghouse/__fixtures__/README.md`](../server/adapters/payer/clearinghouse/__fixtures__/README.md).
+Read it before adding a new fixture, especially before pulling a real ERA from
+the DentalXChange sandbox once partner enrollment completes
+(`.planning/phases/03.5-real-clearinghouse-eob/DXC-ENROLLMENT.md`).
+
 ### Adding a New Payer Adapter
 
 **1. Create the adapter file**
