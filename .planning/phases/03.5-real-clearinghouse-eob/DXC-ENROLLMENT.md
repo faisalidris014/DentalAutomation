@@ -1,5 +1,5 @@
 ---
-status: open
+status: pending_credentials
 owner: Faisal
 opened: 2026-04-26
 sandbox_creds_received: false
@@ -10,10 +10,9 @@ fallback: "Switch to Stedi (RESEARCH.md §Open Question 6) — JSON-only respons
 
 # DXC Partner Enrollment Tracker
 
-> **Status:** OPEN — enrollment NOT yet requested. This file gates Wave 2 (Plan 04
-> real DXC HTTP client + integration tests). Wave 1 (parser + mappers + mock-vs-real
-> dispatch) can proceed against the abstracted `IClearinghouseEOBSource` interface
-> in parallel.
+> **Status:** PENDING CREDENTIALS — sandbox key requested 2026-04-28. Awaiting
+> DXC response with sandbox API key and documentation. Wave 2 (Plan 04) remains
+> blocked until `sandbox_creds_received: true`.
 
 ## Contact
 
@@ -42,6 +41,7 @@ Alternates if Faisal becomes unavailable:
 
 - 2026-04-26 — Tracker created during Phase 3.5 Plan 01 execution. Owner pending user assignment. Enrollment not yet requested.
 - 2026-04-26 — Owner assigned: **Faisal**. Tracker now active. DXC partner conversation NOT yet initiated; sandbox/prod URLs, auth scheme, response format, and per-payer ERA enrollment status all remain pending until partner call lands.
+- 2026-04-28 — Sandbox key requested via developer.dentalxchange.com portal. Access requested covers: Eligibility API, Enhanced Eligibility API, Claim API, Attachment API, Account API, Statement API, Payment API, Reconciliation API. Awaiting DXC response with sandbox API key and onboarding details.
 
 (Append a new dated line for every status change.)
 
