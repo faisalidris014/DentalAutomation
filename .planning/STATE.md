@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-04-26)
 ## Current Position
 
 Phase: 3.5 of 7 effective (Real Clearinghouse EOB Ingestion)
-Plan: 1 of 5 complete in current phase — Wave 0 done, Wave 1 ready to start
-Status: Wave 1 unblocked (Plans 02 + 03 can land in parallel against IClearinghouseEOBSource interface). Wave 2 (Plan 04) blocked on DXC sandbox creds — see `.planning/phases/03.5-real-clearinghouse-eob/DXC-ENROLLMENT.md` (owner: Faisal, escalate 2026-05-10).
-Last activity: 2026-04-26 — Plan 03.5-01 complete: vitest installed, 7 anonymized 835 fixtures committed, DXC partner enrollment tracker activated with Faisal as owner.
+Plan: 3 of 5 complete in current phase — Wave 0 done, Wave 1 done (Plans 02 + 03 complete), Wave 2 next
+Status: Plan 03 complete. Plan 04 (Wave 2) is blocked on DXC sandbox creds — see `.planning/phases/03.5-real-clearinghouse-eob/DXC-ENROLLMENT.md` (owner: Faisal, escalate 2026-05-10). When unblocked, the real source's `fetch()` body hands raw EDI text to `parse835` then `mapParsed835ToRawEOB` — no parser logic in the HTTP layer.
+Last activity: 2026-04-27 — Plan 03.5-03 complete: x12-parser@1.3.0 installed; edi835 parser + pure mapper landed; PHI-safe error wrapping; BPR vs sum(CLP04) + net(PLB) reconciliation guard; 11 fixture-driven unit tests green; 22 tests pass overall.
 
-Progress: [██████████░░░░░░░░░░] 4/8 phases complete (50%) — Phases 1–4 shipped on `main`; Phase 3.5 in progress (1/5 plans), Phases 5, 6, 7 remain.
+Progress: [███████████░░░░░░░░░] 4/8 phases complete (50%) — Phases 1–4 shipped on `main`; Phase 3.5 in progress (3/5 plans), Phases 5, 6, 7 remain.
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed (GSD-tracked): 1 (03.5-01)
-- Average duration: ~45 min (single sample)
-- Total execution time: ~45 min
+- Total plans completed (GSD-tracked): 3 (03.5-01, 03.5-02, 03.5-03)
+- Average duration: ~38 min (three samples)
+- Total execution time: ~115 min
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [██████████░░░░░░░░░░] 4/8 pha
 | 2. PMS Sync & Eligibility Engine | shipped | shipped | n/a |
 | 3. EOB Engine & Triage | shipped | shipped | n/a |
 | 4. Frontend Wiring & Prototype UI | shipped | shipped | n/a |
-| 3.5. Real Clearinghouse EOB Ingestion | 1/5 | ~45 min so far | ~45 min |
+| 3.5. Real Clearinghouse EOB Ingestion | 3/5 | ~115 min so far | ~38 min |
 
 **Recent Trend:**
-- Last 5 plans: 03.5-01 (~45 min, 3 tasks, 10 files created, 1 human-action checkpoint resolved)
-- Trend: First GSD-tracked plan landed cleanly with 2 Rule 3 (blocking) auto-fixes
+- Last 5 plans: 03.5-03 (~35 min, 3 tasks, 4 files created / 4 modified, 11 tests added, 2 Rule-1 deviations — fixture BPR fix + plan-spec BPR05 correction); 03.5-02 (~35 min, 3 tasks, 5 files created / 2 modified, 11 tests added, 0 deviations); 03.5-01 (~45 min, 3 tasks, 10 files created, 1 human-action checkpoint resolved)
+- Trend: TDD discipline holding; deviations bounded to Rule 1 fixture/spec corrections; pure-function discipline enforced via grep on mapper.
 
 *Updated after each plan completion*
 
@@ -57,6 +57,21 @@ Recent decisions affecting current work:
 - **DXC enrollment owner = Faisal** (technical lead). Sami + Muath ops as alternates.
 - **Plan 04 (Wave 2) gated on `sandbox_creds_received: true`** in `DXC-ENROLLMENT.md` frontmatter. Do NOT schedule until DXC sandbox creds arrive or pivot decision lands.
 - **Stedi documented as Plan B fallback** if DXC creds not received by 2026-05-10 escalation deadline.
+
+**From Plan 03.5-02:**
+- **`IClearinghouseEOBSource`** is the internal source contract — scoped to the clearinghouse folder, NOT exported from `payer/types.ts`. Callers always go through `DentalXChangeAdapter`.
+- **`simpleHash` lives in `clearinghouse/utils.ts`** (hoisted from `dentalxchange.ts`). Avoids the circular dep that would arise from `dentalxchange-source-mock.ts` importing back from its parent.
+- **DXC credentials dual-shape locked:** legacy bare-string OR new JSON `{ eligibility?: {...}, payment?: {...} }`. `decryptDXCCredentials` in `payer/registry.ts` supports both. See RESEARCH.md Pitfall 6.
+- **Mode resolution precedence locked:** `PAYER_MOCK_MODE=true` > placeholder/missing creds > explicit `eobMode` > default `'production'`. `featuresEnabled.eob === false` skip stays at engine layer (engine.ts:54), NOT in adapter.
+- **`RealClearinghouseEOBSource` is a Wave 2 stub today** — throws `PayerConnectionError("not implemented yet — Wave 2 (plan 03.5-04)")`. Plan 04 replaces the body.
+
+**From Plan 03.5-03:**
+- **x12-parser@1.3.0 actual API verified** — class is `X12parser` (lowercase 'p'); segments are `{ name, '1', '2', '1-1': composite }` with 1-indexed string-numeral keys (NOT `seg.elements: string[]` as RESEARCH.md sketched). Composite SVC01 is pre-split: `seg["1"]="AD"`, `seg["1-1"]="D2740"`.
+- **Canonical `checkNumber` = TRN02 trace number** — in 5010 X221A1, BPR has no check-number element (BPR05 is payment format code, e.g., "CCP"). TRN02 is the unique payment identifier matching the bank-side EFT. Parser falls back to BPR sources only if TRN02 absent.
+- **Reconciliation rule:** `BPR02 == sum(CLP04) + net(PLB04)` with 1¢ tolerance; mismatch throws `PayerConnectionError(/reconciliation failed/)`.
+- **Allowed-amount derivation locked:** `allowed = fee - sum(CO adjustments)` per dental 835 standard. Denial detection uses CARC reason set `{4, 50, 96, 109, 197}`; first matching adjustment wins.
+- **Mapper module is pure** — zero `await`, zero `db.`, zero `console.`, zero `process.env`. Enforced by grep at task close.
+- **PHI scrub:** parser error messages contain only X12 segment name + segment offset; `PHI_DIGIT_RUN = /[0-9]{8,}/g` regex strips any 8+ digit run from upstream error messages. PHI scrub regression test asserts no 9+ digit runs in thrown messages.
 
 ### Pending Todos
 
@@ -89,6 +104,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-04-26 (Plan 03.5-01 execution + continuation seal)
-Stopped at: Plan 03.5-01 complete. Vitest installed, 7 anonymized 835 fixtures committed, DXC partner enrollment tracker activated with Faisal as owner. Wave 1 (Plans 02 + 03) unblocked.
-Resume file: `.planning/phases/03.5-real-clearinghouse-eob/03.5-02-PLAN.md` — next step is `/gsd-execute-phase 3.5` to start Wave 1 (Plan 02: adapter dispatch refactor).
+Last session: 2026-04-27 (Plan 03.5-03 execution — sequential, autonomous, on main)
+Stopped at: Plan 03.5-03 complete. x12-parser@1.3.0 installed; `parse835` (PHI-safe streaming wrapper, ISA-driven delimiters) + `mapParsed835ToRawEOB` (pure module, BPR/CLP/PLB reconciliation guard) shipped; 11 fixture-driven unit tests green; 22 tests pass overall; tsc clean. Two Rule-1 fixes recorded: delta-dental fixture BPR (840 → 720), and BPR05 = check-number plan spec correction (canonical checkNumber sourced from TRN02). Plan 04 (Wave 2 — RealClearinghouseEOBSource HTTP body) is BLOCKED on DXC sandbox creds.
+Resume file: `.planning/phases/03.5-real-clearinghouse-eob/03.5-04-PLAN.md` — only resumable once DXC sandbox creds arrive (or pivot decision to Stedi). Track via `DXC-ENROLLMENT.md` frontmatter `sandbox_creds_received`.

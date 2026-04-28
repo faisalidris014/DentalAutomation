@@ -421,7 +421,62 @@ Current mappings:
 
 ### DentalXChange EOB Support
 
-The DentalXChange adapter (`server/adapters/payer/clearinghouse/dentalxchange.ts`) implements the optional `retrieveEOBs` method. The current implementation is a deterministic mock 835 generator suitable for the demo prototype — it produces 1–4 EOB documents per call with 1–3 line items each, ~10% denial rate, and amounts that span both auto-post-eligible (`paid <= $250`) and flagged ranges. Production deployment requires replacing the body of `retrieveEOBs` with real DentalXChange API calls and 835 EDI parsing; the surrounding parser, triage, and posting pipeline are production-ready.
+The DentalXChange adapter (`server/adapters/payer/clearinghouse/dentalxchange.ts`) implements the optional `retrieveEOBs` method as a thin dispatcher that delegates to an `IClearinghouseEOBSource` strategy chosen at construction. Two source implementations live alongside the adapter:
+
+- **`MockEOBSource`** (`dentalxchange-source-mock.ts`) — deterministic mock 835 generator suitable for dev / local / Ilyas demo. Produces 1–4 EOB documents per call with 1–3 line items each, ~10% denial rate, and amounts that span both auto-post-eligible (`paid <= $250`) and flagged ranges. Outputs are byte-identical for identical inputs.
+- **`RealClearinghouseEOBSource`** (`dentalxchange-source-real.ts`) — Wave 2 stub today; throws `PayerConnectionError` until plan `03.5-04` ships the real DXC HTTP client + 835 parser orchestration.
+
+#### Mode resolution precedence
+
+`DentalXChangeAdapter.resolveMode()` picks the source at construction using:
+
+1. `process.env.PAYER_MOCK_MODE === 'true'` → `'mock'` (kill switch — D-015 precedent)
+2. credentials missing or `apiKey === 'placeholder'` → `'mock'` (warns when production was explicitly requested but no real creds exist)
+3. explicit `opts.eobMode` (`'mock' | 'sandbox' | 'production'`) — honored
+4. default when real credentials are present → `'production'`
+
+The `featuresEnabled.eob === false` short-circuit at `server/services/eob/engine.ts:54` runs **before** `getPayerAdapter()` is called and is unchanged. The adapter itself does not inspect that boolean — it is engine-side.
+
+#### Credentials shape
+
+The payer registry (`server/adapters/payer/registry.ts`) reads `payer_configs.featuresEnabled.eobMode` and decrypts `payer_configs.credentials` via `decryptDXCCredentials`, which uses the existing AES-256-GCM module (`server/services/encryption/credentials.ts`, D-006 — no parallel crypto). Both on-disk credential shapes are supported:
+
+- **Legacy:** a bare encrypted string → after decrypt, treated as `{ eligibility: { apiKey: <plaintext> } }`.
+- **New:** an encrypted JSON blob → after decrypt + `JSON.parse`, conforms to `DXCCredentialsBlob = { eligibility?: { apiKey }, payment?: { apiKey, baseUrl? } }`.
+
+This dual-shape support keeps the existing eligibility credential rows working unchanged while letting Wave 2 issue distinct API keys per DXC API surface (RESEARCH.md Pitfall 6).
+
+#### 835 EDI Parser & Mapper
+
+The clearinghouse folder ships a two-layer EDI translation pipeline that Wave 2
+will plug into the real HTTP source:
+
+- **`edi835-types.ts`** — internal segment-tree types (`Parsed835`,
+  `ParsedClaim`, `ParsedServiceLine`, `ParsedAdjustment`,
+  `ProviderLevelAdjustment`). Distinct from the public `RawEOBDocument` shape;
+  the mapper layer does the translation.
+- **`edi835-parser.ts`** — `parse835(rawEdi: string): Promise<Parsed835>`
+  wrapping `x12-parser@1.3.0` (production dependency, MIT, zero prod deps).
+  Reads delimiters from the ISA segment automatically (handles default `*` /
+  `~` *and* non-default e.g. `|` / `\n`). Throws `PayerConnectionError` with a
+  PHI-safe message — error strings contain only the X12 segment name and the
+  segment offset; no raw EDI text and no 9+ digit numerical runs ever leak.
+- **`edi835-mappers.ts`** — pure module
+  (`mapParsed835ToRawEOB(parsed) → RawEOBDocument`). Zero `await`, zero `db.`,
+  zero `console.`, zero `process.env`. Performs the BPR vs sum(CLP04) + net(PLB)
+  reconciliation guard (1 cent tolerance) and throws `PayerConnectionError` on
+  mismatch so the engine flags the EOB rather than silently posting wrong
+  amounts. Allowed amount derivation uses the dental 835 standard:
+  `allowed = fee - sum(CO adjustments)`, `adjustment = sum(CO)`,
+  `patientResponsibility = sum(PR)`. Denials are surfaced when any adjustment
+  carries a CARC reason in the known-denial set (CO-4, CO-50, CO-96, CO-109,
+  CO-197).
+
+Note: in 5010 X221A1 the BPR segment carries no check-number element. The
+canonical `checkNumber` downstream is the **TRN02 trace number** (the unique
+payment identifier matching the bank-side EFT) — not BPR05, which is the
+payment format code (e.g., "CCP"). The parser falls back to BPR-derived
+identifiers only when TRN02 is absent.
 
 #### 835 EDI Test Fixtures
 

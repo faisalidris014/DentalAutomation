@@ -44,7 +44,7 @@
 - [x] **REQ-EOB-002** — Six-rule auto-post triage. *Status: IMPLEMENTED. Note: PRD §6 includes a 7th flag reason ("duplicate EOB by check_number") not present in shipped triage; reconciliation in Phase 5.*
 - [x] **REQ-EOB-003** — Manual review and post for flagged EOBs. *Status: IMPLEMENTED.*
 - [x] **REQ-EOB-004** — Weekly EOB summary report. *Status: IMPLEMENTED.*
-- [ ] **REQ-EOB-005** — Real clearinghouse EOB ingestion (replace mock 835 generator with real DentalXChange API + 835 EDI parser; fallbacks: Availity, pVerify, OpenDental EOB API). *Status: PENDING — hard prerequisite for pilot.*
+- [ ] **REQ-EOB-005** — Real clearinghouse EOB ingestion (replace mock 835 generator with real DentalXChange API + 835 EDI parser; fallbacks: Availity, pVerify, OpenDental EOB API). *Status: IN PROGRESS — Plan 02 (2026-04-27) shipped the dispatch + credentials scaffolding (`IClearinghouseEOBSource`, `MockEOBSource`, `decryptDXCCredentials`). Plan 03 (2026-04-27) shipped `parse835` (PHI-safe streaming wrapper) and `mapParsed835ToRawEOB` (pure mapper with BPR/CLP/PLB reconciliation guard) plus 11 fixture-driven unit tests. Plan 04 adds the real HTTP client (BLOCKED on DXC sandbox creds). Hard prerequisite for pilot.*
 
 ### Jobs
 
@@ -166,7 +166,7 @@ Explicitly excluded for the pilot. Documented to prevent scope creep.
 | REQ-EOB-004 | Phase 3 | Complete |
 | REQ-DASHBOARD-001 | Phase 4 | Complete |
 | REQ-UI-001 | Phase 4 | Complete |
-| REQ-EOB-005 | Phase 3.5 | Pending |
+| REQ-EOB-005 | Phase 3.5 | In progress (Plans 02 + 03 done — dispatch, credentials, parser, mapper) |
 | REQ-RECALLS-001 | Phase 5 | Pending (scope reconciliation) |
 | REQ-AGENTS-001 | Phase 5 | Pending (scope reconciliation) |
 | REQ-HIPAA-001 | Phase 6 | Pending |
